@@ -34,5 +34,5 @@ https://my-instance.herokuapp.com/port/<LocalPortOfYourService>/
 [hicon]: https://www.herokucdn.com/deploy/button.svg
 [bicon]: https://bluemix.net/deploy/button.png
 [travis]: https://travis-ci.org/LivelyKernel/lively4-services
-[heroku-deploy]: https://heroku.com/deploy?template=https://github.com/LivelyKernel/lively4-services/tree/master
-[bluemix-deploy]: https://bluemix.net/deploy?repository=https://github.com/LivelyKernel/lively4-services
+[heroku-deploy]: https://heroku.com/deploy?template=https://github.com/CorneliusHagmeister/lively4-services/tree/master
+[bluemix-deploy]: https://bluemix.net/deploy?repository=https://github.com/CorneliusHagmeister/lively4-services
