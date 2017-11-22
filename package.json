@@ -27,7 +27,6 @@
     "http-proxy": "^1.14.0",
     "lively4-server": "git://github.com/LivelyKernel/lively4-server.git",
     "lodash": "^4.12.0",
-    "node": "^6.12.0",
     "node-inspector": "git://github.com/LivelyKernel/node-inspector.git",
     "promisify-node": "^0.4.0",
     "request": "^2.72.0",
