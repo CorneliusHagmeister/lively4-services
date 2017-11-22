@@ -18,7 +18,10 @@ process.on('unhandledRejection', function(reason, p) {
 
 function startLivelyServerInBackground() {
 console.log("start lively server")
-spawn("node",["serviceApi.js"])
+var child = spawn("node",["serviceApi.js"])
+child.stdout.on('data', (data1) => {
+  console.log(`Number of files ${data1}`);
+});
 if (!fs.existsSync(config.logsDir)) {
   fs.mkdirSync(config.logsDir);
 }

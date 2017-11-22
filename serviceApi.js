@@ -130,7 +130,7 @@ function removeTrigger(user, triggerId) {
   }
 }
 
-function assignAction(req, res,) {
+function assignAction(req, res) {
   if (dataVault[req.body.user]) {
     if (dataVault[req.body.user]['trigger'][req.body.triggerId]) {
       dataVault[req.body.user]['trigger'][req.body.triggerId]["actions"].push(req.body.actionId)
