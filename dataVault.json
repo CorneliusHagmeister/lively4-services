@@ -1,1 +1,27 @@
-{"something":{"trigger":{"test.js":{"running":true,"actions":[],"pid":4204}},"credentials":{"dropbox":"1234"}}}
+{
+  "something": {
+    "trigger": {
+      "test.js": {
+        "running": true,
+        "actions": [],
+        "pid": 4204
+      }
+    },
+    "credentials": {
+      "dropbox": "1234"
+    }
+  },
+  "something1": {
+    "trigger": {},
+    "credentials": {}
+  },
+  "somethin": {
+    "trigger": {
+      "test.js": {
+        "running": false,
+        "actions": []
+      }
+    },
+    "credentials": {}
+  }
+}
