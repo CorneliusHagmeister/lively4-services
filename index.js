@@ -51,12 +51,10 @@ function startLivelyServerInBackground() {
     '--server=' + config.LIVELY_SERVER_DIR,
     '--auto-commit=true',
     '--index-files=false'
-  ], {
-    stdio: ['ignore', out, err]
+  ]);
+  livelyServerProcess.stdout.on('data', (data1) => {
+    console.log(`${data1}`);
   });
-  livelyServerProcess.stdout.on('data',(data)=>{
-    console.log(data);
-  })
 
   console.log('lively-server (#' + livelyServerProcess.pid + ') is listenting on ' + config.LIVELY_SERVER_PORT + '...');
 }
