@@ -54,6 +54,9 @@ function startLivelyServerInBackground() {
   ], {
     stdio: ['ignore', out, err]
   });
+  livelyServerProcess.stdout.on('data',(data)=>{
+    console.log(data);
+  })
 
   console.log('lively-server (#' + livelyServerProcess.pid + ') is listenting on ' + config.LIVELY_SERVER_PORT + '...');
 }
@@ -95,7 +98,6 @@ function dispatch(req, res) {
     //req.params=params(req);
     if (req.url.startsWith("/getUserTriggers")) {
       return jsonResponse(res, serviceApi.getUserTriggers(res, req, params(req)))
-      return jsonResponse(res, {status: serviceApi.something()});
     }
     if (req.url === "/") {
       return jsonResponse(res, {status: 'running'});
