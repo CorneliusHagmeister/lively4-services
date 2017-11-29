@@ -63,7 +63,7 @@ function dispatch(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Request-Method', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
 
   if (req.url.indexOf("/mount/") === 0) {
     req.url = req.url.substr('/mount'.length, req.url.length);
