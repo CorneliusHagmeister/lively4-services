@@ -65,6 +65,7 @@ function dispatch(req, res) {
   res.setHeader('Access-Control-Request-Method', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  //res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader("Access-Control-Allow-Credentials", true);
 
   if (req.url.indexOf("/mount/") === 0) {
