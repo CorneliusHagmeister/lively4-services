@@ -16,7 +16,7 @@ var portForwardMatcher = /\/port\/([0-9]+)(\/.*)/;
 var serviceApi = require('./serviceApi')
 var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
-var url = 'mongodb://<lively4>:<lively4>@ds161455.mlab.com:61455/lively4-services'
+var url = 'mongodb://lively4:lively4@ds161455.mlab.com:61455/lively4-services';
 
 
 MongoClient.connect(url, function(err, db) {
