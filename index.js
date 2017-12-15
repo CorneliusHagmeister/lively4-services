@@ -21,7 +21,7 @@ var url = 'mongodb://<lively4>:<lively4>@ds161455.mlab.com:61455/lively4-service
 
 MongoClient.connect(url, function(err, db) {
   if (!err) {
-    console.log('Congrats on connecting, so well done', url);
+    console.log('Congrats on connecting, so well done',url);
 
     process.on('unhandledRejection', function(reason, p) {
       console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
@@ -108,11 +108,7 @@ MongoClient.connect(url, function(err, db) {
       if (req.method === "GET") {
         //req.params=params(req);
         if (req.url.startsWith("/getUserTriggers")) {
-          db.collection("customers").find({}).toArray(function(err, result) {
-            if (err) throw err;
-            console.log(result);
-            return jsonResponse(res, result)
-          });
+          return jsonResponse(res, serviceApi.getUserTriggers(res, req, params(req)))
         }
         if (req.url === "/") {
           return jsonResponse(res, {
@@ -309,7 +305,7 @@ MongoClient.connect(url, function(err, db) {
       });
     }
   } else {
-    console.log('You Failed!!!', err);
+    console.log('You Failed!!!',err );
 
     // do some work here with the database.
 
