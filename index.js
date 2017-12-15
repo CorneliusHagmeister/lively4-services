@@ -5,7 +5,9 @@ var httpProxy = require('http-proxy');
 var spawn = childProcess.spawn;
 var ServiceManager = require('./service_manager');
 var app = http.createServer(dispatch);
-var proxy = httpProxy.createProxyServer({ws: true});
+var proxy = httpProxy.createProxyServer({
+  ws: true
+});
 var config = require('./config');
 var promisify = require('promisify-node');
 var fs = promisify('fs');
@@ -17,7 +19,7 @@ var MongoClient = mongodb.MongoClient;
 var url = 'mongodb://lively4:lively4@ds161455.mlab.com:61455/lively4-services';
 
 
-MongoClient.connect(url, function (err, db) {
+MongoClient.connect(url, function(err, db) {
   if (err) {
     console.log('Unable to connect to the mongoDB server. Error:', err);
   } else {
@@ -60,10 +62,17 @@ MongoClient.connect(url, function (err, db) {
       if (req.method === "GET") {
         //req.params=params(req);
         if (req.url.startsWith("/getUserTriggers")) {
+          db.collection("customers").find({}).toArray(function(err, result) {
+            if (err) console.log(err);;
+            console.log(result);
+            db.close();
+          });
           return jsonResponse(res, serviceApi.getUserTriggers(res, req, params(req)))
         }
         if (req.url === "/") {
-          return jsonResponse(res, {status: 'running'});
+          return jsonResponse(res, {
+            status: 'running'
+          });
         } else if (req.url === "/list") {
           return jsonResponse(res, ServiceManager.listProcesses());
         } else {
@@ -224,7 +233,9 @@ function dispatch(req, res) {
       return jsonResponse(res, serviceApi.getUserTriggers(res, req, params(req)))
     }
     if (req.url === "/") {
-      return jsonResponse(res, {status: 'running'});
+      return jsonResponse(res, {
+        status: 'running'
+      });
     } else if (req.url === "/list") {
       return jsonResponse(res, ServiceManager.listProcesses());
     } else {
@@ -329,6 +340,7 @@ function postStart(req, res, data) {
     });
   });
 }
+
 function postClone(req, res, data) {
   var repoUrl = data.url;
   var repoName = repoUrl.split("/").slice(-1)[0].split(".git")[0];
@@ -340,12 +352,14 @@ function postClone(req, res, data) {
         message: error
       });
     } else {
-      var npm = process.platform === 'win32'
-        ? 'npm.cmd'
-        : 'npm';
+      var npm = process.platform === 'win32' ?
+        'npm.cmd' :
+        'npm';
       var npmInstall = spawn(npm, [
         "install", "--dev"
-      ], {cwd: dirName});
+      ], {
+        cwd: dirName
+      });
       npmInstall.stdout.on('data', function(data) {
         console.log(data.toString());
       });
@@ -353,18 +367,26 @@ function postClone(req, res, data) {
         console.log(data.toString());
       });
       npmInstall.on('close', function(exitCode) {
-        jsonResponse(res, {status: 'success'});
+        jsonResponse(res, {
+          status: 'success'
+        });
       });
     }
   });
 }
+
 function postStop(req, res, data) {
   ServiceManager.killProcess(data.id);
-  return jsonResponse(res, {status: 'success'});
+  return jsonResponse(res, {
+    status: 'success'
+  });
 }
+
 function postRemove(req, res, data) {
   ServiceManager.removeProcess(data.id);
-  return jsonResponse(res, {status: 'success'});
+  return jsonResponse(res, {
+    status: 'success'
+  });
 }
 
 function notFound(res) {
@@ -373,7 +395,9 @@ function notFound(res) {
 }
 
 function jsonResponse(res, obj) {
-  res.writeHead(200, {'Content-Type': 'application/json'});
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
   res.end(JSON.stringify(obj));
 }
 
