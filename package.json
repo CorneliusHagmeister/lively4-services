@@ -1,7 +1,7 @@
 {
   "name": "lively4-services",
   "engines": {
-      "node": "6.11.1"
+    "node": "6.11.1"
   },
   "version": "1.0.0",
   "description": "Services for LivelyKernel",
@@ -30,6 +30,7 @@
     "http-proxy": "^1.14.0",
     "lively4-server": "git://github.com/CorneliusHagmeister/lively4-server.git",
     "lodash": "^4.12.0",
+    "mongodb": "^3.0.0-rc0",
     "node-inspector": "git://github.com/LivelyKernel/node-inspector.git",
     "npm": "^5.5.1",
     "promisify-node": "^0.4.0",
