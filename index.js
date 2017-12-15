@@ -294,16 +294,6 @@ MongoClient.connect(url, function(err, db) {
       });
     });
 
-    function start(cb) {
-      app.listen(config.PORT, function() {
-        startLivelyServerInBackground();
-        ServiceManager.startDebugServer();
-        console.log('Listening on port ' + config.PORT + '...');
-        if (cb) {
-          cb();
-        }
-      });
-    }
   } else {
     console.log('You Failed!!!',err );
 
@@ -313,6 +303,17 @@ MongoClient.connect(url, function(err, db) {
     db.close();
   }
 });
+
+function start(cb) {
+  app.listen(config.PORT, function() {
+    startLivelyServerInBackground();
+    ServiceManager.startDebugServer();
+    console.log('Listening on port ' + config.PORT + '...');
+    if (cb) {
+      cb();
+    }
+  });
+}
 
 if (!module.parent) {
   // the script was directly executed
