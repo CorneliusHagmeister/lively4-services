@@ -46,7 +46,7 @@ module.exports = {
     if (dataVault[data.user]) {
       return JSON.stringify(dataVault[data.user]['trigger'])
     } else {
-      return "The given username does not exist"
+      return "The given username does not exist1"
       console.error("The given username does not exist");
     }
   },
