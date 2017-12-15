@@ -63,11 +63,13 @@ MongoClient.connect(url, function(err, db) {
         //req.params=params(req);
         if (req.url.startsWith("/getUserTriggers")) {
           db.collection("customers").find({}).toArray(function(err, result) {
-            if (err) console.log(err);;
-            console.log(result);
-            db.close();
+            if (err){
+              console.log(err)
+            }else{
+              console.log(result);
+              return jsonResponse(res, result)
+            }
           });
-          return jsonResponse(res, serviceApi.getUserTriggers(res, req, params(req)))
         }
         if (req.url === "/") {
           return jsonResponse(res, {
