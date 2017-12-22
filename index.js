@@ -18,12 +18,14 @@ var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
 var url = 'mongodb://lively4:lively4@ds161455.mlab.com:61455/lively4-services';
 
+function dispatch(req,res){
 
+}
 MongoClient.connect(url, function(err, db) {
   if (err) {
     console.log('Unable to connect to the mongoDB server. Error:', err);
   } else {
-    function dispatch(req, res) {
+    dispatch = function (req, res) {
       // Set CORS headers
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Request-Method', '*');
