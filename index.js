@@ -59,21 +59,25 @@ function dispatch(req, res) {
       if (req.method === "GET") {
         //req.params=params(req);
         if (req.url.startsWith("/getUserTriggers")) {
-          db.collection("customers").find({}).toArray(function(err, result) {
+          const myAwesomeDB = db.db('lively4-services')
+          myAwesomeDB.collection("customers").find({}).toArray(function(err, result) {
             if (err) {
               console.log(err)
             } else {
               console.log(result);
-              return jsonResponse(res, result)
+              res.writeHead(200, {'Content-Type': 'application/json'});
+              res.end(JSON.stringify(result));
+              //return jsonResponse(res, result)
             }
           });
-        }
-        if (req.url === "/") {
-          return jsonResponse(res, {status: 'running'});
-        } else if (req.url === "/list") {
-          return jsonResponse(res, ServiceManager.listProcesses());
         } else {
-          notFound(res);
+          if (req.url === "/") {
+            return jsonResponse(res, {status: 'running'});
+          } else if (req.url === "/list") {
+            return jsonResponse(res, ServiceManager.listProcesses());
+          } else {
+            notFound(res);
+          }
         }
       } else if (req.method === "POST") {
         var body = [];
