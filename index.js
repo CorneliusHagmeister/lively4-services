@@ -5,9 +5,7 @@ var httpProxy = require('http-proxy');
 var spawn = childProcess.spawn;
 var ServiceManager = require('./service_manager');
 var app = http.createServer(dispatch);
-var proxy = httpProxy.createProxyServer({
-  ws: true
-});
+var proxy = httpProxy.createProxyServer({ws: true});
 var config = require('./config');
 var promisify = require('promisify-node');
 var fs = promisify('fs');
@@ -18,14 +16,11 @@ var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
 var url = 'mongodb://lively4:lively4@ds161455.mlab.com:61455/lively4-services';
 
-function dispatch(req,res){
-
-}
-MongoClient.connect(url, function(err, db) {
-  if (err) {
-    console.log('Unable to connect to the mongoDB server. Error:', err);
-  } else {
-    dispatch = function (req, res) {
+function dispatch(req, res) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) {
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    } else {
       // Set CORS headers
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Request-Method', '*');
@@ -65,18 +60,16 @@ MongoClient.connect(url, function(err, db) {
         //req.params=params(req);
         if (req.url.startsWith("/getUserTriggers")) {
           db.collection("customers").find({}).toArray(function(err, result) {
-            if (err){
+            if (err) {
               console.log(err)
-            }else{
+            } else {
               console.log(result);
               return jsonResponse(res, result)
             }
           });
         }
         if (req.url === "/") {
-          return jsonResponse(res, {
-            status: 'running'
-          });
+          return jsonResponse(res, {status: 'running'});
         } else if (req.url === "/list") {
           return jsonResponse(res, ServiceManager.listProcesses());
         } else {
@@ -147,8 +140,8 @@ MongoClient.connect(url, function(err, db) {
       }
     }
 
-  }
-});
+  })
+};
 process.on('unhandledRejection', function(reason, p) {
   console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
 });
@@ -194,8 +187,6 @@ function startLivelyServerInBackground() {
 
   console.log('lively-server (#' + livelyServerProcess.pid + ') is listenting on ' + config.LIVELY_SERVER_PORT + '...');
 }
-
-
 
 function postGet(req, res, data) {
   return ServiceManager.getProcessInfo(data.id).then(function(info) {
@@ -243,14 +234,12 @@ function postClone(req, res, data) {
         message: error
       });
     } else {
-      var npm = process.platform === 'win32' ?
-        'npm.cmd' :
-        'npm';
+      var npm = process.platform === 'win32'
+        ? 'npm.cmd'
+        : 'npm';
       var npmInstall = spawn(npm, [
         "install", "--dev"
-      ], {
-        cwd: dirName
-      });
+      ], {cwd: dirName});
       npmInstall.stdout.on('data', function(data) {
         console.log(data.toString());
       });
@@ -258,9 +247,7 @@ function postClone(req, res, data) {
         console.log(data.toString());
       });
       npmInstall.on('close', function(exitCode) {
-        jsonResponse(res, {
-          status: 'success'
-        });
+        jsonResponse(res, {status: 'success'});
       });
     }
   });
@@ -268,16 +255,12 @@ function postClone(req, res, data) {
 
 function postStop(req, res, data) {
   ServiceManager.killProcess(data.id);
-  return jsonResponse(res, {
-    status: 'success'
-  });
+  return jsonResponse(res, {status: 'success'});
 }
 
 function postRemove(req, res, data) {
   ServiceManager.removeProcess(data.id);
-  return jsonResponse(res, {
-    status: 'success'
-  });
+  return jsonResponse(res, {status: 'success'});
 }
 
 function notFound(res) {
@@ -286,9 +269,7 @@ function notFound(res) {
 }
 
 function jsonResponse(res, obj) {
-  res.writeHead(200, {
-    'Content-Type': 'application/json'
-  });
+  res.writeHead(200, {'Content-Type': 'application/json'});
   res.end(JSON.stringify(obj));
 }
 
