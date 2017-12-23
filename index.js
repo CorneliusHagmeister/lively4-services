@@ -59,18 +59,6 @@ function dispatch(req, res) {
 
       if (req.method === "GET") {
         //req.params=params(req);
-        if (req.url.startsWith("/getUserTriggers")) {
-          database.collection("customers").find({}).toArray(function(err, result) {
-            if (err) {
-              console.log(err)
-            } else {
-              console.log(result);
-              res.writeHead(200, {'Content-Type': 'application/json'});
-              res.end(JSON.stringify(result));
-              //return jsonResponse(res, result)
-            }
-          });
-        } else {
           if (req.url === "/") {
             return jsonResponse(res, {status: 'running'});
           } else if (req.url === "/list") {
@@ -93,28 +81,31 @@ function dispatch(req, res) {
                 serviceApi.addUser(req, res, data,database);
                 return
               case '/removeUser':
-                serviceApi.removeUser(req, res, data);
+                serviceApi.removeUser(req, res, data,database);
                 return
               case '/assignTrigger':
-                serviceApi.assignTrigger(req, res, data);
+                serviceApi.assignTrigger(req, res, data,database);
+                return
+              case '/assignTrigger':
+                serviceApi.getUserTriggers(req, res, data,database);
                 return
               case '/removeTrigger':
-                serviceApi.removeUser(req, res, data);
+                serviceApi.removeUser(req, res, data,database);
                 return
               case '/removeAction':
-                serviceApi.removeAction(req, res, data);
+                serviceApi.removeAction(req, res, data,database);
                 return
               case '/runTrigger':
-                serviceApi.runUserTrigger(req, res, data);
+                serviceApi.runUserTrigger(req, res, data,database);
                 return
               case '/stopTrigger':
-                serviceApi.stopUserTrigger(req, res, data);
+                serviceApi.stopUserTrigger(req, res, data,database);
                 return
               case '/setCredentials':
-                serviceApi.setCredentials(req, res, data);
+                serviceApi.setCredentials(req, res, data,database);
                 return
               case '/assignAction':
-                serviceApi.assignAction(req, res, data);
+                serviceApi.assignAction(req, res, data,database);
                 return
             }
             if (req.url === "/get") {
