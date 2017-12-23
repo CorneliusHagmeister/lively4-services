@@ -85,9 +85,6 @@ function dispatch(req, res) {
               case '/assignTrigger':
                 serviceApi.assignTrigger(req, res, data,database);
                 return
-              case '/assignTrigger':
-                serviceApi.getUserTriggers(req, res, data,database);
-                return
               case '/removeTrigger':
                 serviceApi.removeUser(req, res, data,database);
                 return
