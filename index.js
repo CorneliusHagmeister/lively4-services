@@ -66,7 +66,6 @@ function dispatch(req, res) {
           } else {
             notFound(res);
           }
-        }
       } else if (req.method === "POST") {
         var body = [];
         req.on('data', function(chunk) {
