@@ -90,6 +90,8 @@ module.exports = {
         res.write("Cant find User")
         res.end()
       } else {
+        res.write(JSON.stringify(result))
+        res.end()
         result["triggers"][data.triggerId] = {
           running: false
         }
