@@ -86,7 +86,7 @@ module.exports = {
     db.collection("users").find({
       user: data.user
     }, function(err, result) {
-      if (err) {
+      if (err||result.length<1) {
         res.write("Cant find User")
         res.end()
       } else {
