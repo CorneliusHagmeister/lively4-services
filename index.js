@@ -21,6 +21,7 @@ function dispatch(req, res) {
     if (err) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
     } else {
+      const database = db.db('lively4-services')
       // Set CORS headers
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Request-Method', '*');
@@ -59,8 +60,7 @@ function dispatch(req, res) {
       if (req.method === "GET") {
         //req.params=params(req);
         if (req.url.startsWith("/getUserTriggers")) {
-          const myAwesomeDB = db.db('lively4-services')
-          myAwesomeDB.collection("customers").find({}).toArray(function(err, result) {
+          database.collection("customers").find({}).toArray(function(err, result) {
             if (err) {
               console.log(err)
             } else {
@@ -90,7 +90,7 @@ function dispatch(req, res) {
             req.body = data
             switch (req.url) {
               case '/createUser':
-                serviceApi.addUser(req, res, data);
+                serviceApi.addUser(req, res, data,database);
                 return
               case '/removeUser':
                 serviceApi.removeUser(req, res, data);

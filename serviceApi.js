@@ -3,33 +3,55 @@ const {exec} = require('child_process');
 const spawn = require('child_process').spawn;
 var actionsPath = "./services/actions/"
 var triggerPath = "./services/trigger/"
+var mongodb = require('mongodb');
 const fs = require('fs');
 
 module.exports = {
-  setCredentials: function(req, res) {
-    if (dataVault[req.body.user]) {
-      dataVault[req.body.user]["credentials"][req.body.type] = req.body.key
-      fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-      res.status(200).send()
-    } else {
-      res.status(400).send("The given username does not exist")
-    }
-  },
-  addUser: function(req, res, data) {
-    if (!dataVault[data.user]) {
-      dataVault[data.user] = {
-        trigger: {},
-        credentials: {}
+  setCredentials: function(req, res, db) {
+    db.collection("users").findOne({
+      user: req.body.user
+    }, function(err, result) {
+      if (err) {
+        res.status(400).send("The given username does not exist")
+      } else {
+        result["credentials"][req.body.type] = req.body.key
+        db.collection("users").update({
+          user: req.body.user
+        }, result, function(err, result) {
+          if (err) {
+            res.status(400).send("The credential update didnt work")
+          } else {
+            res.status(200).send("Succeful update")
+          }
+        });
       }
-      fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-      res.end()
-    } else {
-      res.write("The username already exists")
-      res.end()
-      console.error("The username already exists");
-    }
+    })
   },
-
+  addUser: function(req, res, data, db) {
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.status(400).send("Something went wrong")
+      } else {
+        if (!result[data.user]) {
+          newUser = {}
+          newUser["user"] = data.user
+          newUser["trigger"] = {}
+          newUser["credentials"] = {}
+          db.collection("users").insertOne(newUser, function(err, result) {
+            if (err) {
+              res.status(400).send("The user update didnt work")
+            } else {
+              res.status(200).send("Succeful update")
+            }
+          });
+        } else {
+          res.status(400).send("The given username already exists")
+        }
+      }
+    })
+  },
   removeUser: function(req, res, data) {
     if (dataVault[data.user] != null) {
       delete dataVault[data.user]
@@ -41,7 +63,6 @@ module.exports = {
       console.error("The given username does not exist");
     }
   },
-
   getUserTriggers: function(req, res, data) {
     if (dataVault[data.user]) {
       return JSON.stringify(dataVault[data.user]['trigger'])
@@ -50,7 +71,6 @@ module.exports = {
       console.error("The given username does not exist");
     }
   },
-
   assignTrigger: function(req, res, data) {
     if (dataVault[data.user]) {
       dataVault[data.user]["trigger"][data.triggerId] = {
@@ -65,7 +85,6 @@ module.exports = {
       res.end()
     }
   },
-
   removeTrigger: function(user, triggerId, data) {
     stopTriggerScript()
     if (dataVault[data.user]["trigger"][data.triggerId]) {
@@ -78,7 +97,6 @@ module.exports = {
       res.end()
     }
   },
-
   assignAction: function(req, res, data) {
     if (dataVault[data.user]) {
       if (dataVault[data.user]['trigger'][data.triggerId]) {
@@ -96,7 +114,6 @@ module.exports = {
       res.end()
     }
   },
-
   removeAction: function(req, res, data) {
     if (dataVault[data.user]) {
       if (dataVault[data.user]['trigger'][data.triggerId]) {
@@ -117,7 +134,6 @@ module.exports = {
       res.end()
     }
   },
-
   runUserTrigger: function(req, res, data) {
     if (dataVault[data.user]) {
       if (dataVault[data.user]["trigger"][data.triggerId]) {
@@ -135,7 +151,6 @@ module.exports = {
       res.end()
     }
   },
-
   startTriggerScript: function(user, triggerId) {
     console.log(triggerPath + "" + triggerId);
     fs.readFile(triggerPath + "" + triggerId, "utf8", function(err, data) {
@@ -155,7 +170,6 @@ module.exports = {
       })
     });
   },
-
   stopTriggerScript: function(user, triggerId) {
     if (dataVault[user]["trigger"][triggerId]) {
       //for linux prob =>
@@ -169,7 +183,6 @@ module.exports = {
       console.error("Script wasnt found");
     }
   },
-
   stopUserTrigger: function(req, res, data) {
     if (dataVault[data.user]) {
       if (dataVault[data.user]["trigger"][data.triggerId]) {
