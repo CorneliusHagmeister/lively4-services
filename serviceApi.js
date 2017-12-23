@@ -95,9 +95,9 @@ module.exports = {
         }
         db.collection("users").update({
           user: data.user
-        }, result, function(err, result) {
+        }, result, function(errUpdate, resultUpdate) {
           if (err) {
-            res.write("The Trigger update didnt work")
+            res.write("The Trigger update didnt work: "+errUpdate)
             res.end()
           } else {
             res.write("Sucessful update")
