@@ -32,127 +32,176 @@ module.exports = {
       user: data.user
     }, function(err, result) {
       if (err) {
-        res.status(400).send("Something went wrong")
+        res.write("Something went wrong")
+        res.end()
       } else {
         if (!result[data.user]) {
           newUser = {}
           newUser["user"] = data.user
-          newUser["trigger"] = {}
+          newUser["triggers"] = {}
           newUser["credentials"] = {}
           db.collection("users").insertOne(newUser, function(err, result) {
             if (err) {
-              res.status(400).send("The user update didnt work")
+              res.write("The user update didnt work: " + err)
+              res.end()
             } else {
-              res.status(200).send("Succeful update")
+              res.write("Succeful update")
+              res.end()
             }
           });
         } else {
-          res.status(400).send("The given username already exists")
+          res.write("The given username already exists")
+          res.end()
         }
       }
     })
   },
-  removeUser: function(req, res, data) {
-    if (dataVault[data.user] != null) {
-      delete dataVault[data.user]
-      fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-      res.end()
-    } else {
-      res.write("The given username does not exist")
-      res.end();
-      console.error("The given username does not exist");
-    }
-  },
-  getUserTriggers: function(req, res, data) {
-    if (dataVault[data.user]) {
-      return JSON.stringify(dataVault[data.user]['trigger'])
-    } else {
-      return "The given username does not exist1"
-      console.error("The given username does not exist");
-    }
-  },
-  assignTrigger: function(req, res, data) {
-    if (dataVault[data.user]) {
-      dataVault[data.user]["trigger"][data.triggerId] = {
-        running: false,
-        actions: []
+  removeUser: function(req, res, data, db) {
+    db.collection("users").deleteOne({
+      user: data.user
+    }, function(err, obj) {
+      if (err) {
+        res.write("deletion error: " + err)
+        res.end()
+      } else {
+        res.write("Succesful deletion")
+        res.end()
       }
-      fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-      res.end()
-    } else {
-      console.error("The given username does not exist");
-      res.write("The given username does not exist")
-      res.end()
-    }
+    })
   },
-  removeTrigger: function(user, triggerId, data) {
+  getUserTriggers: function(req, res, data, db) {
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.write("Cant get user Triggers: " + err)
+        res.end()
+      } else {
+        var triggers = result["triggers"]
+        jsonResponse(res, triggers)
+      }
+    })
+  },
+  assignTrigger: function(req, res, data, db) {
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.write("Cant find User")
+        res.end()
+      } else {
+        result["triggers"][data.triggerId] = {
+          running: false
+        }
+        db.collection("users").update({
+          user: data.user
+        }, result, function(err, result) {
+          if (err) {
+            res.write("The Trigger update didnt work")
+            res.end()
+          } else {
+            res.write("Sucessful update")
+            res.end()
+          }
+        });
+      }
+    })
+  },
+  removeTrigger: function(user, triggerId, data, db) {
     stopTriggerScript()
-    if (dataVault[data.user]["trigger"][data.triggerId]) {
-      delete dataVault[data.user]["trigger"][data.triggerId]
-      fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-      res.end()
-    } else {
-      console.error("Given trigger wasn't not attached to given user");
-      res.write("Given trigger wasn't not attached to given user")
-      res.end()
-    }
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.write("Cant find User: " + err)
+        res.end()
+      } else {
+        delete result["triggers"][data.triggerId]
+        db.collection("users").update({
+          user: data.user
+        }, result, function(err, result) {
+          if (err) {
+            res.write("The Trigger update didnt work")
+            res.end()
+          } else {
+            res.write("Sucessful Trigger update")
+            res.end()
+          }
+        })
+      }
+    })
   },
   assignAction: function(req, res, data) {
-    if (dataVault[data.user]) {
-      if (dataVault[data.user]['trigger'][data.triggerId]) {
-        dataVault[data.user]['trigger'][data.triggerId]["actions"].push(data.actionId)
-        fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.write("Cant find User")
         res.end()
       } else {
-        console.error("The given triggerId does not exist");
-        res.write("The given triggerId does not exist")
-        res.end()
+        result["triggers"][data.triggerId][data.actionId] = data.actionId
+        db.collection("users").update({
+          user: data.user
+        }, result, function(err, result) {
+          if (err) {
+            res.write("The Action update didnt work")
+            res.end()
+          } else {
+            res.write("Sucessful update")
+            res.end()
+          }
+        });
       }
-    } else {
-      console.error("The given username does not exist");
-      res.write("The given username does not exist")
-      res.end()
-    }
+    })
   },
   removeAction: function(req, res, data) {
-    if (dataVault[data.user]) {
-      if (dataVault[data.user]['trigger'][data.triggerId]) {
-        var index = dataVault[data.user]['trigger'][data.triggerId]["actions"].indexOf(actionId);
-        if (index > -1) {
-          dataVault[data.user]['trigger'][data.triggerId]["actions"].splice(index, 1)
-          fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-          res.end()
-        }
-      } else {
-        console.error("The given triggerId does not exist");
-        res.write("The given triggerId does not exist")
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.write("Cant find User")
         res.end()
+      } else {
+        delete result["triggers"][data.triggerId][data.actionId]
+        db.collection("users").update({
+          user: data.user
+        }, result, function(err, result) {
+          if (err) {
+            res.write("The Action deletion didnt work")
+            res.end()
+          } else {
+            res.write("Sucessful deletion")
+            res.end()
+          }
+        });
       }
-    } else {
-      console.error("The given username does not exist");
-      res.write("The given username does not exist")
-      res.end()
-    }
+    })
   },
   runUserTrigger: function(req, res, data) {
-    if (dataVault[data.user]) {
-      if (dataVault[data.user]["trigger"][data.triggerId]) {
-        dataVault[data.user]["trigger"][data.triggerId]["running"] = true
-        fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-        startTriggerScript(data.user, data.triggerId);
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (err) {
+        res.write("Cant find User")
         res.end()
+      } else {
+        result["triggers"][data.triggerId]["running"] = true
+        db.collection("users").update({
+          user: data.user
+        }, result, function(err, result) {
+          if (err) {
+            res.write("The Action deletion didnt work")
+            res.end()
+          } else {
+            startTriggerScript(data.user, data.triggerId);
+            res.write("Sucessful deletion")
+            res.end()
+          }
+        });
       }
-      console.error("The given trigerId could not be found");
-      res.write("The given trigerId could not be found")
-      res.end()
-    } else {
-      console.error("The given username does not exist");
-      res.write("The given username does not exist")
-      res.end()
-    }
+    })
   },
   startTriggerScript: function(user, triggerId) {
-    console.log(triggerPath + "" + triggerId);
     fs.readFile(triggerPath + "" + triggerId, "utf8", function(err, data) {
       if (err)
         return -1
@@ -165,39 +214,53 @@ module.exports = {
         child.stdout.on('data', (data1) => {
           console.log(`Number of files ${data1}`);
         });
-        dataVault[user]["trigger"][triggerId]["pid"] = child.pid
-        fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
+        db.collection("users").find({
+          user: data.user
+        }, function(err, result) {
+          result["triggers"][triggerId]["pid"] = child.pid
+          db.collection("users").update({
+            user: data.user
+          }, result, function(err, result) {})
+        })
       })
     });
   },
   stopTriggerScript: function(user, triggerId) {
-    if (dataVault[user]["trigger"][triggerId]) {
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
       //for linux prob =>
       // exec("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"])
-      exec("taskkill /pid " + dataVault[user]["trigger"][triggerId]["pid"] + " /f")
-      console.log("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"]);
-      delete dataVault[user]["trigger"][triggerId]["pid"]
-      dataVault[user]["trigger"][triggerId]["running"] = false
-      fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
-    } else {
-      console.error("Script wasnt found");
-    }
+      exec("taskkill /pid " + result["triggers"][triggerId]["pid"] + " /f")
+      console.log("kill -9 " + result["triggers"][triggerId]["pid"]);
+      delete result["triggers"][triggerId]["pid"]
+      result["triggers"][triggerId]["running"] = false
+      db.collection("users").update({
+        user: data.user
+      }, result, function(err, result) {
+        if (err) {
+          console.log("The trigger could not be updated");
+        }
+      })
+    })
   },
   stopUserTrigger: function(req, res, data) {
-    if (dataVault[data.user]) {
-      if (dataVault[data.user]["trigger"][data.triggerId]) {
-        dataVault[data.user]["trigger"][data.triggerId]['running'] = false
+    db.collection("users").find({
+      user: data.user
+    }, function(err, result) {
+      if (result["triggers"][data.triggerId]) {
+        result["triggers"][data.triggerId]['running'] = false
         stopTriggerScript(data.user, data.triggerId);
-        fs.writeFile('./dataVault.json', JSON.stringify(dataVault))
+        res.end()
+      } else {
+        console.error("The given triggerId could not be found");
+        res.write("The given triggerId could not be found")
         res.end()
       }
-      console.error("The given triggerId could not be found");
-      res.write("The given triggerId could not be found")
-      res.end()
-    } else {
-      console.error("The given username does not exist");
-      res.write("The given username does not exist")
-      res.end()
-    }
+    })
   }
+}
+function jsonResponse(res, obj) {
+  res.writeHead(200, {'Content-Type': 'application/json'});
+  res.end(JSON.stringify(obj));
 }
