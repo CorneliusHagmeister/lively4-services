@@ -70,7 +70,7 @@ module.exports = {
     })
   },
   getUserTriggers: function(req, res, data, db) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err) {
@@ -83,15 +83,13 @@ module.exports = {
     })
   },
   assignTrigger: function(req, res, data, db) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err||result.length<1) {
         res.write("Cant find User")
         res.end()
       } else {
-        res.write(JSON.stringify(result))
-        res.end()
         result["triggers"][data.triggerId] = {
           running: false
         }
@@ -111,7 +109,7 @@ module.exports = {
   },
   removeTrigger: function(user, triggerId, data, db) {
     stopTriggerScript()
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err) {
@@ -134,7 +132,7 @@ module.exports = {
     })
   },
   assignAction: function(req, res, data) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err) {
@@ -157,7 +155,7 @@ module.exports = {
     })
   },
   removeAction: function(req, res, data) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err) {
@@ -180,7 +178,7 @@ module.exports = {
     })
   },
   runUserTrigger: function(req, res, data) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err) {
@@ -216,7 +214,7 @@ module.exports = {
         child.stdout.on('data', (data1) => {
           console.log(`Number of files ${data1}`);
         });
-        db.collection("users").find({
+        db.collection("users").findOne({
           user: data.user
         }, function(err, result) {
           result["triggers"][triggerId]["pid"] = child.pid
@@ -228,7 +226,7 @@ module.exports = {
     });
   },
   stopTriggerScript: function(user, triggerId) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       //for linux prob =>
@@ -247,7 +245,7 @@ module.exports = {
     })
   },
   stopUserTrigger: function(req, res, data) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (result["triggers"][data.triggerId]) {
