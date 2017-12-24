@@ -2,12 +2,12 @@ var dataVault = require('./dataVault.json')
 const {exec} = require('child_process');
 const spawn = require('child_process').spawn;
 var actionsPath = "./services/actions/"
-var triggerPath = "./services/trigger/"
+var triggerPath = "./services/"
 var mongodb = require('mongodb');
 const fs = require('fs');
 
 module.exports = {
-  setCredentials: function(req, res,data, db) {
+  setCredentials: function(req, res, data, db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
@@ -15,7 +15,7 @@ module.exports = {
         res.write("The given username does not exist")
         res.end()
       } else {
-        var credentials=result["credentials"]
+        var credentials = result["credentials"]
         credentials[data.type] = data.key
         db.collection("users").updateOne({
           user: data.user
@@ -186,7 +186,7 @@ module.exports = {
       }
     })
   },
-  removeAction: function(req, res, data,db) {
+  removeAction: function(req, res, data, db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
@@ -217,7 +217,7 @@ module.exports = {
       }
     })
   },
-  runUserTrigger: function(req, res, data,db) {
+  runUserTrigger: function(req, res, data, db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
@@ -225,7 +225,7 @@ module.exports = {
         res.write("Cant find User")
         res.end()
       } else {
-        var triggers=result["triggers"]
+        var triggers = result["triggers"]
         triggers[replaceDots(data.triggerId)]["running"] = true
         db.collection("users").update({
           user: data.user
@@ -238,7 +238,7 @@ module.exports = {
             res.write("The Action deletion didnt work")
             res.end()
           } else {
-            startTriggerScript(data.user, data.triggerId,db);
+            startTriggerScript(data.user, data.triggerId, db,res);
             res.write("Sucessfully ran Trigger")
             res.end()
           }
@@ -246,13 +246,13 @@ module.exports = {
       }
     })
   },
-  stopUserTrigger: function(req, res, data,db) {
+  stopUserTrigger: function(req, res, data, db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (result["triggers"][replaceDots(data.triggerId)]) {
         result["triggers"][replaceDots(data.triggerId)]['running'] = false
-        stopTriggerScript(data.user, data.triggerId,db);
+        stopTriggerScript(data.user, data.triggerId, db);
         res.end()
       } else {
         console.error("The given triggerId could not be found");
@@ -262,30 +262,32 @@ module.exports = {
     })
   }
 }
-function startTriggerScript(user, triggerId,db) {
+function startTriggerScript(user, triggerId, db) {
   fs.readFile(triggerPath + "" + triggerId, "utf8", function(err, data) {
     if (err)
       return -1
-      db.collection("users").findOne({
-        user: user
-      }, function(err, result) {
-        data = data.replace("dropboxKey", result["credentials"]["dropbox"])
-        fs.writeFile("./tmpScript.js", data, function(writeErr) {
-          if (writeErr)
+    db.collection("users").findOne({
+      user: user
+    }, function(err, result) {
+      data = data.replace("dropboxKey", result["credentials"]["dropbox"])
+      fs.writeFile("./tmpScript.js", data, function(writeErr) {
+        if (writeErr) {
           return -1
-          var child = spawn("node", ["./tmpScript.js"])
-          child.stdout.on('data', (data1) => {
-            console.log(`Number of files ${data1}`);
-          });
-        var triggers=result["triggers"]
+        }
+        var child = spawn("node", ["./tmpScript.js"])
+        child.stdout.on('data', (data1) => {
+          console.log(`Number of files ${data1}`);
+        });
+        var triggers = result["triggers"]
         triggers[replaceDots(triggerId)]["pid"] = child.pid
-        db.collection("users").update({
-          user: data.user
+        db.collection("users").updateOne({
+          user: user
         }, {
           $set: {
             "triggers": triggers
           }
-        }, function(err, result) {})
+        }, function(err, result) {
+        })
       })
     })
   });
