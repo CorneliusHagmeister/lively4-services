@@ -7,35 +7,43 @@ var mongodb = require('mongodb');
 const fs = require('fs');
 
 module.exports = {
-  setCredentials: function(req, res, db) {
+  setCredentials: function(req, res,data, db) {
     db.collection("users").findOne({
-      user: req.body.user
+      user: data.user
     }, function(err, result) {
       if (err) {
-        res.status(400).send("The given username does not exist")
+        res.write("The given username does not exist")
+        res.end()
       } else {
-        result["credentials"][req.body.type] = req.body.key
-        db.collection("users").update({
-          user: req.body.user
-        }, result, function(err, result) {
-          if (err) {
-            res.status(400).send("The credential update didnt work")
+        var credentials=result["credentials"]
+        credentials[data.type] = data.key
+        db.collection("users").updateOne({
+          user: data.user
+        }, {
+          $set: {
+            "credentials": credentials
+          }
+        }, function(errUpdate, resultUpdate) {
+          if (errUpdate) {
+            res.write("The credential update didnt work")
+            res.end()
           } else {
-            res.status(200).send("Succeful update")
+            res.write("Succeful update")
+            res.end()
           }
         });
       }
     })
   },
   addUser: function(req, res, data, db) {
-    db.collection("users").find({
+    db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
       if (err) {
         res.write("Something went wrong")
         res.end()
       } else {
-        if (!result[data.user]) {
+        if (!result) {
           newUser = {}
           newUser["user"] = data.user
           newUser["triggers"] = {}
@@ -78,7 +86,13 @@ module.exports = {
         res.end()
       } else {
         var triggers = result["triggers"]
-        jsonResponse(res, triggers)
+        var endResult = {}
+        for (var key in triggers) {
+          if (!triggers.hasOwnProperty(key))
+            continue;
+          endResult[replaceUnderscore(key)] = triggers[key]
+        }
+        jsonResponse(res, endResult)
       }
     })
   },
@@ -86,29 +100,34 @@ module.exports = {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
-      if (err||result.length<1) {
+      if (err || !result) {
         res.write("Cant find User")
         res.end()
       } else {
-        result["triggers"][data.triggerId] = {
+        var triggers = result["triggers"]
+        triggers[replaceDots(data.triggerId)] = {
           running: false
         }
-        db.collection("users").update({
+        db.collection("users").updateOne({
           user: data.user
-        }, result, function(errUpdate, resultUpdate) {
-          if (err) {
-            res.write("The Trigger update didnt work: "+errUpdate)
+        }, {
+          $set: {
+            "triggers": triggers
+          }
+        }, function(errUpdate, resultUpdate) {
+          if (errUpdate) {
+            res.write("The Trigger update didnt work: " + errUpdate)
             res.end()
           } else {
-            res.write("Sucessful update")
+            res.write("resultUpdate")
             res.end()
           }
         });
       }
     })
   },
-  removeTrigger: function(user, triggerId, data, db) {
-    stopTriggerScript()
+  removeTrigger: function(req, res, data, db) {
+    stopTriggerScript(data.user, data.triggerId, db)
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
@@ -116,11 +135,16 @@ module.exports = {
         res.write("Cant find User: " + err)
         res.end()
       } else {
-        delete result["triggers"][data.triggerId]
-        db.collection("users").update({
+        var triggers = result["triggers"]
+        delete triggers[replaceDots(data.triggerId)]
+        db.collection("users").updateOne({
           user: data.user
-        }, result, function(err, result) {
-          if (err) {
+        }, {
+          $set: {
+            "triggers": triggers
+          }
+        }, function(errUpdate, resultUpdate) {
+          if (errUpdate) {
             res.write("The Trigger update didnt work")
             res.end()
           } else {
@@ -131,7 +155,7 @@ module.exports = {
       }
     })
   },
-  assignAction: function(req, res, data) {
+  assignAction: function(req, res, data, db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
@@ -139,10 +163,18 @@ module.exports = {
         res.write("Cant find User")
         res.end()
       } else {
-        result["triggers"][data.triggerId][data.actionId] = data.actionId
-        db.collection("users").update({
+        var triggers = result["triggers"]
+        if (!triggers[replaceDots(data.triggerId)]["actions"]) {
+          triggers[replaceDots(data.triggerId)]["actions"] = []
+        }
+        triggers[replaceDots(data.triggerId)]["actions"].push(data.actionId)
+        db.collection("users").updateOne({
           user: data.user
-        }, result, function(err, result) {
+        }, {
+          $set: {
+            "triggers": triggers
+          }
+        }, function(err, result) {
           if (err) {
             res.write("The Action update didnt work")
             res.end()
@@ -154,7 +186,7 @@ module.exports = {
       }
     })
   },
-  removeAction: function(req, res, data) {
+  removeAction: function(req, res, data,db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
@@ -162,95 +194,65 @@ module.exports = {
         res.write("Cant find User")
         res.end()
       } else {
-        delete result["triggers"][data.triggerId][data.actionId]
-        db.collection("users").update({
-          user: data.user
-        }, result, function(err, result) {
-          if (err) {
-            res.write("The Action deletion didnt work")
-            res.end()
-          } else {
-            res.write("Sucessful deletion")
-            res.end()
-          }
-        });
-      }
-    })
-  },
-  runUserTrigger: function(req, res, data) {
-    db.collection("users").findOne({
-      user: data.user
-    }, function(err, result) {
-      if (err) {
-        res.write("Cant find User")
-        res.end()
-      } else {
-        result["triggers"][data.triggerId]["running"] = true
-        db.collection("users").update({
-          user: data.user
-        }, result, function(err, result) {
-          if (err) {
-            res.write("The Action deletion didnt work")
-            res.end()
-          } else {
-            startTriggerScript(data.user, data.triggerId);
-            res.write("Sucessful deletion")
-            res.end()
-          }
-        });
-      }
-    })
-  },
-  startTriggerScript: function(user, triggerId) {
-    fs.readFile(triggerPath + "" + triggerId, "utf8", function(err, data) {
-      if (err)
-        return -1
-      data = data.replace("dropboxKey", "utils.getKey('" + user + "','dropbox')")
-      data = "const utils = require('./utils');\n" + data
-      fs.writeFile("./tmpScript.js", data, function(writeErr) {
-        if (writeErr)
-          return -1
-        var child = spawn("node", ["./tmpScript.js"])
-        child.stdout.on('data', (data1) => {
-          console.log(`Number of files ${data1}`);
-        });
-        db.collection("users").findOne({
-          user: data.user
-        }, function(err, result) {
-          result["triggers"][triggerId]["pid"] = child.pid
-          db.collection("users").update({
-            user: data.user
-          }, result, function(err, result) {})
-        })
-      })
-    });
-  },
-  stopTriggerScript: function(user, triggerId) {
-    db.collection("users").findOne({
-      user: data.user
-    }, function(err, result) {
-      //for linux prob =>
-      // exec("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"])
-      exec("taskkill /pid " + result["triggers"][triggerId]["pid"] + " /f")
-      console.log("kill -9 " + result["triggers"][triggerId]["pid"]);
-      delete result["triggers"][triggerId]["pid"]
-      result["triggers"][triggerId]["running"] = false
-      db.collection("users").update({
-        user: data.user
-      }, result, function(err, result) {
-        if (err) {
-          console.log("The trigger could not be updated");
+        var triggers = result["triggers"]
+        var index = triggers[replaceDots(data.triggerId)]["actions"].indexOf(data.actionId)
+        if (index > -1) {
+          triggers[replaceDots(data.triggerId)]["actions"].splice(index, 1)
         }
-      })
+        db.collection("users").update({
+          user: data.user
+        }, {
+          $set: {
+            "triggers": triggers
+          }
+        }, function(err, result) {
+          if (err) {
+            res.write("The Action deletion didnt work")
+            res.end()
+          } else {
+            res.write("Sucessful deletion")
+            res.end()
+          }
+        });
+      }
     })
   },
-  stopUserTrigger: function(req, res, data) {
+  runUserTrigger: function(req, res, data,db) {
     db.collection("users").findOne({
       user: data.user
     }, function(err, result) {
-      if (result["triggers"][data.triggerId]) {
-        result["triggers"][data.triggerId]['running'] = false
-        stopTriggerScript(data.user, data.triggerId);
+      if (err) {
+        res.write("Cant find User")
+        res.end()
+      } else {
+        var triggers=result["triggers"]
+        triggers[replaceDots(data.triggerId)]["running"] = true
+        db.collection("users").update({
+          user: data.user
+        }, {
+          $set: {
+            "triggers": triggers
+          }
+        }, function(err, result) {
+          if (err) {
+            res.write("The Action deletion didnt work")
+            res.end()
+          } else {
+            startTriggerScript(data.user, data.triggerId,db);
+            res.write("Sucessfully ran Trigger")
+            res.end()
+          }
+        });
+      }
+    })
+  },
+  stopUserTrigger: function(req, res, data,db) {
+    db.collection("users").findOne({
+      user: data.user
+    }, function(err, result) {
+      if (result["triggers"][replaceDots(data.triggerId)]) {
+        result["triggers"][replaceDots(data.triggerId)]['running'] = false
+        stopTriggerScript(data.user, data.triggerId,db);
         res.end()
       } else {
         console.error("The given triggerId could not be found");
@@ -259,6 +261,72 @@ module.exports = {
       }
     })
   }
+}
+function startTriggerScript(user, triggerId,db) {
+  fs.readFile(triggerPath + "" + triggerId, "utf8", function(err, data) {
+    if (err)
+      return -1
+      db.collection("users").findOne({
+        user: user
+      }, function(err, result) {
+        data = data.replace("dropboxKey", result["credentials"]["dropbox"])
+        fs.writeFile("./tmpScript.js", data, function(writeErr) {
+          if (writeErr)
+          return -1
+          var child = spawn("node", ["./tmpScript.js"])
+          child.stdout.on('data', (data1) => {
+            console.log(`Number of files ${data1}`);
+          });
+        var triggers=result["triggers"]
+        triggers[replaceDots(triggerId)]["pid"] = child.pid
+        db.collection("users").update({
+          user: data.user
+        }, {
+          $set: {
+            "triggers": triggers
+          }
+        }, function(err, result) {})
+      })
+    })
+  });
+}
+function stopTriggerScript(user, triggerId, db) {
+  db.collection("users").findOne({
+    user: user
+  }, function(err, result) {
+    //for linux prob =>
+    // exec("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"])
+    if (result) {
+      if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
+        exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
+        console.log("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"]);
+      }
+      var triggers = result["triggers"]
+      if (!triggers || !triggers[replaceDots(triggerId)])
+        return
+      if (triggers[replaceDots(triggerId)]["pid"]) {
+        delete triggers[replaceDots(triggerId)]["pid"]
+      }
+      triggers[replaceDots(triggerId)]["running"] = false
+      db.collection("users").updateOne({
+        user: user
+      }, {
+        $set: {
+          "triggers": triggers
+        }
+      }, function(err, result) {
+        if (err) {
+          console.log("The trigger could not be updated");
+        }
+      })
+    }
+  })
+}
+function replaceDots(toBeReplaced) {
+  return toBeReplaced.replace(/\./g, '1234')
+}
+function replaceUnderscore(toBeReplaced) {
+  return toBeReplaced.replace(/1234/g, '.')
 }
 function jsonResponse(res, obj) {
   res.writeHead(200, {'Content-Type': 'application/json'});
