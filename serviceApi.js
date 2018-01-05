@@ -85,14 +85,19 @@ module.exports = {
         res.write("Cant get user Triggers: " + err)
         res.end()
       } else {
-        var triggers = result["triggers"]
-        var endResult = {}
-        for (var key in triggers) {
-          if (!triggers.hasOwnProperty(key))
-            continue;
-          endResult[replaceUnderscore(key)] = triggers[key]
+        if(result){
+          var triggers = result["triggers"]
+          var endResult = {}
+          for (var key in triggers) {
+            if (!triggers.hasOwnProperty(key))
+              continue;
+            endResult[replaceUnderscore(key)] = triggers[key]
+          }
+          jsonResponse(res, endResult)
+        }else{
+          res.writeHead(400, {'Content-Type': 'application/json'});
+          res.end("Cant find the given username")
         }
-        jsonResponse(res, endResult)
       }
     })
   },
