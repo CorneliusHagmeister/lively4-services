@@ -276,7 +276,7 @@ module.exports = {
         if(result){
           var resultString=""
           for(var i =0;i<result.length;i++){
-            resultString+=result[i]["message"]
+            resultString+=result[i]["message"] + '\n'
           }
           console.log(result);
           res.write(resultString)
