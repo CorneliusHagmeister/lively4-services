@@ -360,8 +360,8 @@ function stopTriggerScript(user, triggerId, db) {
     // exec("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"])
     if (result) {
       if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
-        exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
-        // exec("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"])
+        //exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
+        exec("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"])
         console.log("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"]);
       }
       var triggers = result["triggers"]
