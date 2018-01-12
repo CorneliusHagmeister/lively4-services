@@ -276,7 +276,7 @@ module.exports = {
         if(result){
           var resultString=""
           for(var i =0;i<result.length;i++){
-            resultString+=result[i]["message"] + '\n'
+            resultString+=result[i]["message"]
           }
           console.log(result);
           res.write(resultString)
@@ -331,7 +331,7 @@ function startTriggerScript(user, triggerId, db) {
         var child = spawn("node", ["./tmpScript.js"])
         child.stdout.on('data', (data) => {
           //write log file
-          create_log(triggerId, data.toString(),user, db)
+          create_log(triggerId,user, data.toString(), db)
           console.log(data.toString());
         });
         child.on('close', function(code) {
