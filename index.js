@@ -106,6 +106,9 @@ function dispatch(req, res) {
               case '/assignAction':
                 serviceApi.assignAction(req, res, data,database);
                 return
+              case '/getTriggerLogs':
+                serviceApi.getTriggerLogs(req, res, data,database);
+                return
             }
             if (req.url === "/get") {
               postGet(req, res, data);

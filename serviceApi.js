@@ -85,7 +85,7 @@ module.exports = {
         res.write("Cant get user Triggers: " + err)
         res.end()
       } else {
-        if(result){
+        if (result) {
           var triggers = result["triggers"]
           var endResult = {}
           for (var key in triggers) {
@@ -94,7 +94,7 @@ module.exports = {
             endResult[replaceUnderscore(key)] = triggers[key]
           }
           jsonResponse(res, endResult)
-        }else{
+        } else {
           res.writeHead(400, {'Content-Type': 'application/json'});
           res.end("Cant find the given username")
         }
@@ -243,7 +243,7 @@ module.exports = {
             res.write("The Action deletion didnt work")
             res.end()
           } else {
-            startTriggerScript(data.user, data.triggerId, db,res);
+            startTriggerScript(data.user, data.triggerId, db, res);
             res.write("Sucessfully ran Trigger")
             res.end()
           }
@@ -265,8 +265,55 @@ module.exports = {
         res.end()
       }
     })
+  },
+  getTriggerLogs: function(req, res, data, db) {
+    console.log("inside  get logs");
+    var trigger=replaceDots(data.triggerId)
+    db.collection("logs").find({
+      trigger: trigger
+    }).sort({date:1}).toArray(function(err, result) {
+      if(!err){
+        if(result){
+          var resultString=""
+          for(var i =0;i<result.length;i++){
+            resultString+=result[i]["message"]
+          }
+          console.log(result);
+          res.write(resultString)
+          res.end()
+        }
+        res.end()
+      } else {
+        console.error("The given triggerId could not be found");
+        res.status(200)
+        res.write("The given triggerId could not be found")
+        res.end()
+      }
+    })
   }
 }
+function create_log(triggerId, log, db) {
+  var new_doc = {
+    trigger: replaceDots(triggerId),
+    message: log,
+    date: Date.now()
+  }
+  db.collection("logs").insertOne(new_doc, function(err, result) {
+    if (err)
+      throw err;
+
+    }
+  )
+}
+function remove_logs(triggerId, db) {
+  db.collection("logs").remove({
+    trigger: replaceDots(triggerId)
+  }, function(err, numberRemoved) {
+    if (err)
+      throw err
+  });
+}
+
 function startTriggerScript(user, triggerId, db) {
   fs.readFile(triggerPath + "" + triggerId, "utf8", function(err, data) {
     if (err)
@@ -280,8 +327,15 @@ function startTriggerScript(user, triggerId, db) {
           return -1
         }
         var child = spawn("node", ["./tmpScript.js"])
-        child.stdout.on('data', (data1) => {
-          console.log(`Number of files ${data1}`);
+        child.stdout.on('data', (data) => {
+          //write log file
+          create_log(triggerId, data.toString(), db)
+          console.log(data.toString());
+        });
+        child.on('close', function(code) {
+          //remove log file
+          remove_logs(triggerId,db)
+          //Here you can get the exit code of the script
         });
         var triggers = result["triggers"]
         triggers[replaceDots(triggerId)]["pid"] = child.pid
@@ -291,8 +345,7 @@ function startTriggerScript(user, triggerId, db) {
           $set: {
             "triggers": triggers
           }
-        }, function(err, result) {
-        })
+        }, function(err, result) {})
       })
     })
   });
@@ -306,6 +359,7 @@ function stopTriggerScript(user, triggerId, db) {
     if (result) {
       if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
         exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
+        // exec("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"])
         console.log("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"]);
       }
       var triggers = result["triggers"]
