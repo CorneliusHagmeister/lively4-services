@@ -276,7 +276,8 @@ module.exports = {
         if(result){
           var resultString=""
           for(var i =0;i<result.length;i++){
-            resultString+=result[i]["message"]
+            date = new Date(result[i][date] * 1000)
+            resultString+="["+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"] "+result[i]["message"]
           }
           console.log(result);
           res.write(resultString)
