@@ -292,10 +292,11 @@ module.exports = {
     })
   }
 }
-function create_log(triggerId, log, db) {
+function create_log(triggerId,user, log, db) {
   var new_doc = {
     trigger: replaceDots(triggerId),
     message: log,
+    user:user,
     date: Date.now()
   }
   db.collection("logs").insertOne(new_doc, function(err, result) {
@@ -305,9 +306,10 @@ function create_log(triggerId, log, db) {
     }
   )
 }
-function remove_logs(triggerId, db) {
+function remove_logs(triggerId,user, db) {
   db.collection("logs").remove({
-    trigger: replaceDots(triggerId)
+    trigger: replaceDots(triggerId),
+    user:user
   }, function(err, numberRemoved) {
     if (err)
       throw err
@@ -329,12 +331,12 @@ function startTriggerScript(user, triggerId, db) {
         var child = spawn("node", ["./tmpScript.js"])
         child.stdout.on('data', (data) => {
           //write log file
-          create_log(triggerId, data.toString(), db)
+          create_log(triggerId, data.toString(),user, db)
           console.log(data.toString());
         });
         child.on('close', function(code) {
           //remove log file
-          remove_logs(triggerId,db)
+          remove_logs(triggerId,user,db)
           //Here you can get the exit code of the script
         });
         var triggers = result["triggers"]
