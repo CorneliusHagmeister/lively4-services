@@ -362,7 +362,7 @@ function stopTriggerScript(user, triggerId, db) {
       if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
         //exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
         exec("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"])
-        console.log("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"]);
+        remove_logs(triggerId,user,db)
       }
       var triggers = result["triggers"]
       if (!triggers || !triggers[replaceDots(triggerId)])
