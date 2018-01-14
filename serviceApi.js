@@ -95,8 +95,10 @@ module.exports = {
           }
           jsonResponse(res, endResult)
         } else {
-          res.writeHead(400, {'Content-Type': 'application/json'});
-          res.end("Cant find the given username")
+          addUser(req, res, data, db);
+          return;
+          // res.writeHead(400, {'Content-Type': 'application/json'});
+          // res.end("Cant find the given username")
         }
       }
     })
