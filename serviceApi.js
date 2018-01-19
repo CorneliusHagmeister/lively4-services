@@ -328,12 +328,13 @@ function startTriggerScript(user, triggerId, db) {
     }, function(err, result) {
       data = data.replace("dropboxKey", result["credentials"]["dropbox"])
       var actionString=""
-
-      for(var i =0;i<result["triggers"][triggerId]["actions"].length;i++){
-        var action=result["triggers"][triggerId]["actions"][i]
-        var spawnAction="\n var child"+i+" = spawn('node',['./services/"+action+"'])"
-        var pipeAction = "process.stdin.pipe(child"+i+".stdin)\n child"+i+".stdout.on('data',(data)=>{console.log('["+action+"]'+data.toString());})"
-        actionString=actionString+spawnAction+pipeAction
+      if(result["triggers"][triggerId]["actions"]){
+        for(var i =0;i<result["triggers"][triggerId]["actions"].length;i++){
+          var action=result["triggers"][triggerId]["actions"][i]
+          var spawnAction="\n var child"+i+" = spawn('node',['./services/"+action+"'])"
+          var pipeAction = "process.stdin.pipe(child"+i+".stdin)\n child"+i+".stdout.on('data',(data)=>{console.log('["+action+"]'+data.toString());})"
+          actionString=actionString+spawnAction+pipeAction
+        }
       }
       data=data.replace("runActions()",actionString)
       console.log(data);
