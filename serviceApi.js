@@ -326,12 +326,11 @@ function startTriggerScript(user, triggerId, db) {
     db.collection("users").findOne({
       user: user
     }, function(err, result) {
-      data = data.replace("dropboxKey", result["credentials"]["dropbox"])
+      data = data.replace("dropboxKey", "'"+result["credentials"]["dropbox"]+"'")
       var actionString=""
       if(result["triggers"][replaceDots(triggerId)]["actions"]){
         for(var i =0;i<result["triggers"][replaceDots(triggerId)]["actions"].length;i++){
           var action=result["triggers"][replaceDots(triggerId)]["actions"][i]
-          console.log("this is the action name : "+action);
           var spawnAction="\n var child"+i+" = spawn('node',['./services/"+action+"'])\n"
           var pipeAction = "process.stdin.pipe(child"+i+".stdin)\n child"+i+".stdout.on('data',(data)=>{console.log('["+action+"]'+data.toString());})"
           actionString=actionString+spawnAction+pipeAction
