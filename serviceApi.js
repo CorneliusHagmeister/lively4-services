@@ -334,7 +334,7 @@ function startTriggerScript(user, triggerId, db) {
         var pipeAction = "process.stdin.pipe(child"+i+".stdin)\n child"+i+".stdout.on('data',(data)=>{console.log('["+action+"]'+data.toString());})"
         actionString=actionString+spawnAction+pipeAction
       }
-      data.=data.replace("runActions()",actionString)
+      data=data.replace("runActions()",actionString)
       fs.writeFile("./tmpScript.js", data, function(writeErr) {
         if (writeErr) {
           return -1
