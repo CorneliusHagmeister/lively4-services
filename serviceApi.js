@@ -330,18 +330,22 @@ function startTriggerScript(user, triggerId, db) {
         }, function (err, result) {
             data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
             var actionString = "";
-            var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/)[0];
-            var actionParameters = actionCall.substring(actionCall.indexOf("(")+1,actionCall.lastIndexOf(")"))
+            var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
+            if(actionCall) {
+                actionCall=actionCall[0]
+                var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")"))
 
-            if (result["triggers"][replaceDots(triggerId)]["actions"]) {
-                for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
-                    var action = result["triggers"][replaceDots(triggerId)]["actions"][i]
-                    var spawnAction = "\n var child" + i + " = spawn('node',['./services/" + action + "',"+actionParameters+"])\n"
-                    var pipeAction = "process.stdin.pipe(child" + i + ".stdin)\n child" + i + ".stdout.on('data',(data)=>{console.log('[" + action + "]'+data.toString());})"
-                    actionString = actionString + spawnAction + pipeAction+"\n"
+                if (result["triggers"][replaceDots(triggerId)]["actions"]) {
+                    for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
+                        var action = result["triggers"][replaceDots(triggerId)]["actions"][i]
+                        var spawnAction = "\n var child" + i + " = spawn('node',['./services/" + action + "'," + actionParameters + "])\n"
+                        var pipeAction = "process.stdin.pipe(child" + i + ".stdin)\n child" + i + ".stdout.on('data',(data)=>{console.log('[" + action + "]'+data.toString());})"
+                        actionString = actionString + spawnAction + pipeAction + "\n"
+                    }
                 }
+                data = data.replace(actionCall, actionString);
+                data = "var spawn = require('child_process').spawn;\n" + data;
             }
-            data = data.replace(actionCall, actionString)
             console.log(data);
             fs.writeFile("./tmpScript.js", data, function (writeErr) {
                 if (writeErr) {
