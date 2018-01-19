@@ -332,7 +332,7 @@ function startTriggerScript(user, triggerId, db) {
         for(var i =0;i<result["triggers"][replaceDots(triggerId)]["actions"].length;i++){
           var action=result["triggers"][replaceDots(triggerId)]["actions"][i]
           console.log("this is the action name : "+action);
-          var spawnAction="\n var child"+i+" = spawn('node',['./services/"+action+"'])"
+          var spawnAction="\n var child"+i+" = spawn('node',['./services/"+action+"'])\n"
           var pipeAction = "process.stdin.pipe(child"+i+".stdin)\n child"+i+".stdout.on('data',(data)=>{console.log('["+action+"]'+data.toString());})"
           actionString=actionString+spawnAction+pipeAction
         }
