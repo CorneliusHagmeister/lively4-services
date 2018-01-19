@@ -328,9 +328,10 @@ function startTriggerScript(user, triggerId, db) {
     }, function(err, result) {
       data = data.replace("dropboxKey", result["credentials"]["dropbox"])
       var actionString=""
-      if(result["triggers"][triggerId]["actions"]){
-        for(var i =0;i<result["triggers"][triggerId]["actions"].length;i++){
-          var action=result["triggers"][triggerId]["actions"][i]
+      if(result["triggers"][replaceDots(triggerId)]["actions"]){
+        for(var i =0;i<result["triggers"][replaceDots(triggerId)]["actions"].length;i++){
+          var action=result["triggers"][replaceDots(triggerId)]["actions"][i]
+          console.log("this is the action name : "+action);
           var spawnAction="\n var child"+i+" = spawn('node',['./services/"+action+"'])"
           var pipeAction = "process.stdin.pipe(child"+i+".stdin)\n child"+i+".stdout.on('data',(data)=>{console.log('["+action+"]'+data.toString());})"
           actionString=actionString+spawnAction+pipeAction
