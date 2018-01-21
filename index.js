@@ -103,6 +103,9 @@ function dispatch(req, res) {
               case '/setCredentials':
                 serviceApi.setCredentials(req, res, data,database);
                 return
+              case '/getCredentials':
+                  serviceApi.getCredentials(req, res, data,database);
+                  return
               case '/assignAction':
                 serviceApi.assignAction(req, res, data,database);
                 return

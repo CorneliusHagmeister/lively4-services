@@ -35,6 +35,20 @@ module.exports = {
             }
         })
     },
+    getCredentials: function (req, res, data, db) {
+        db.collection("users").findOne({
+            user: data.user
+        }, function (err, result) {
+            if (err) {
+                res.write("The given username does not exist")
+                res.end()
+            } else {
+                var credentials = result["credentials"];
+                res.write(credentials);
+                res.end();
+            }
+        })
+    },
     addUser: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
