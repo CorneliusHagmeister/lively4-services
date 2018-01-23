@@ -1,5 +1,5 @@
 var Dropbox = require('dropbox');
-var dbx = new Dropbox({ accessToken: 'R0OA10_0QoMAAAAAAAAQThs5uOU5UFcJjc0g9RlBGJwjvpD8PTdkCAwoOw-hGnvF' });
+var dbx = new Dropbox({ accessToken: 'op5m2s3ZXDAAAAAAAAAALJIoDP8_313ZzvWQCMFH4Tf8qdg6b9WlFdyOvmgF42mc' });
 // var dbx = new Dropbox({ accessToken: dropboxKey });
 
 const PATH = '/PhD/papers';
@@ -10,7 +10,8 @@ function poll() {
     console.log("polling right now")
     dbx.filesListFolder({path: PATH})
         .then(function(response) {
-            console.log(response);
+            // console.log(response);
+            var somethingNew = false;
             var curr = Date.now();
             for (entry of response.entries) {
                 if (entry.name.endsWith(ENDING) ) { // also check if timestamp works
@@ -18,13 +19,12 @@ function poll() {
                     var old = (curr - modified) / 1000 / 60; // in minutes
                     if (old < POLLING_INTERVAL) {
                         console.log("NEW PDF!");
+                        somethingNew = true;
                         runActions(entry.name.substring(0, entry.name.length - 4))
-
-                    } else {
-                        console.log("OLD PDF");
                     }
                 }
             }
+            console.log("Nothing new this run");
         })
         .catch(function(error) {
             console.log(error);

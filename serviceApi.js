@@ -2,7 +2,7 @@ var dataVault = require('./dataVault.json')
 const {exec} = require('child_process');
 const spawn = require('child_process').spawn;
 var actionsPath = "./services/actions/"
-var triggerPath = "./services/"
+var triggerPath = "./services/trigger/"
 var mongodb = require('mongodb');
 const fs = require('fs');
 
@@ -352,7 +352,7 @@ function startTriggerScript(user, triggerId, db) {
                 if (result["triggers"][replaceDots(triggerId)]["actions"]) {
                     for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
                         var action = result["triggers"][replaceDots(triggerId)]["actions"][i]
-                        var spawnAction = "\n var child" + i + " = spawn('node',['./services/" + action + "'," + actionParameters + "])\n"
+                        var spawnAction = "\n var child" + i + " = spawn('node',['"+actionsPath + action + "'," + actionParameters + "])\n"
                         var pipeAction = "process.stdin.pipe(child" + i + ".stdin)\n child" + i + ".stdout.on('data',(data)=>{console.log('[" + action + "]'+data.toString());})"
                         actionString = actionString + spawnAction + pipeAction + "\n"
                     }
