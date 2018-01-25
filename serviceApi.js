@@ -111,7 +111,33 @@ module.exports = {
                     }
                     jsonResponse(res, endResult)
                 } else {
-                    addUser(req, res, data, db);
+                    db.collection("users").findOne({
+                        user: data.user
+                    }, function (err, result) {
+                        if (err) {
+                            res.writeHead(400)
+                            res.end("Something went wrong")
+                        } else {
+                            if (!result) {
+                                newUser = {}
+                                newUser["user"] = data.user
+                                newUser["triggers"] = {}
+                                newUser["credentials"] = {}
+                                db.collection("users").insertOne(newUser, function (err, result) {
+                                    if (err) {
+                                        res.writeHead(400)
+                                        res.end("The user update didnt work: " + err)
+                                    } else {
+                                        res.writeHead(200)
+                                        res.end("Succeful update")
+                                    }
+                                });
+                            } else {
+                                res.writeHead(400)
+                                res.end("The given username already exists")
+                            }
+                        }
+                    })
                     return;
                     // res.writeHead(400, {'Content-Type': 'application/json'});
                     // res.end("Cant find the given username")
