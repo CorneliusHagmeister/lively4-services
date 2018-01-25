@@ -118,6 +118,18 @@ function dispatch(req, res) {
                             case '/createAction':
                                 serviceApi.createAction(req, res, data, database);
                                 return
+                            case '/updateActionDescription':
+                                serviceApi.updateActionDescription(req, res, data, database);
+                                return
+                            case '/getActionDescription':
+                                serviceApi.getActionDescription(req, res, data, database);
+                                return
+                            case '/getWatcherDescription':
+                                serviceApi.getWatcherDescription(req, res, data, database);
+                                return
+                            case '/updateWatcherDescription':
+                                serviceApi.updateWatcherDescription(req, res, data, database);
+                                return
                         }
                         if (req.url === "/get") {
                             postGet(req, res, data);

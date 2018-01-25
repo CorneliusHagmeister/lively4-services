@@ -145,37 +145,51 @@ module.exports = {
             }
         })
     },
-    getWatcherDescription: function(req,res,data,db){
+    getWatcherDescription: function (req, res, data, db) {
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
-            if(err){
+            if (err ) {
                 res.writeHead(400)
                 res.end("File not found")
+                return
             }
-            if(content["description"]) {
-                content = JSON.parse(content)
+            if (content) {
+                content = JSON.parse(content.toString())
+            } else {
+                res.writeHead(400)
+                res.end("No description found1.")
+                return
+            }
+            if (content["description"]!=undefined) {
                 res.writeHead(200)
                 res.end(JSON.stringify(content["description"]))
-            }else{
+            } else {
                 res.writeHead(400)
                 res.end("No description found.")
             }
         })
     },
-    updateWatcherDescription: function(req,res,data,db){
+    updateWatcherDescription: function (req, res, data, db) {
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
-            if(err){
+            if (err) {
                 res.writeHead(400)
                 res.end("File not found")
+                return
             }
-            if(content["description"]) {
-                content = JSON.parse(content)
-                content["description"]=data.description
-                fs.writeFile(config.watcherConfigsDir + "/" +(data.triggerId).replace(".js", ".json"),content , function (writeErr) {
+            if (content) {
+                content = JSON.parse(content.toString())
+            } else {
+                res.writeHead(400)
+                res.end("No description found.")
+                return
+            }
+            if (content["description"]!=undefined) {
+                content["description"] = data.description
+                fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
                     res.writeHead(200)
                     res.end(JSON.stringify(content["description"]))
 
                 })
-            }else{
+            } else {
                 res.writeHead(400)
                 res.end("No description found.")
             }
@@ -267,37 +281,52 @@ module.exports = {
             }
         })
     },
-    getActionDescription: function(req,res,data,db){
+    getActionDescription: function (req, res, data, db) {
         fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
-            if(err){
+            if (err || !content) {
                 res.writeHead(400)
                 res.end("File not found")
+                return
             }
-            if(content["description"]) {
-                content = JSON.parse(content)
+            if (content) {
+                content = JSON.parse(content.toString())
+            } else {
+                res.writeHead(400)
+                res.end("No description found.")
+                return
+            }
+            if (content["description"]!=undefined) {
                 res.writeHead(200)
                 res.end(JSON.stringify(content["description"]))
-            }else{
+            } else {
                 res.writeHead(400)
                 res.end("No description found.")
             }
         })
     },
-    updateActionDescription: function(req,res,data,db){
+    updateActionDescription: function (req, res, data, db) {
         fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
-            if(err){
+            if (err) {
                 res.writeHead(400)
                 res.end("File not found")
+                return
             }
-            if(content["description"]) {
-                    content = JSON.parse(content)
-                    content["description"]=data.description
-                fs.writeFile(config.actionConfigsDir + "/" +(data.actionId).replace(".js", ".json"),content , function (writeErr) {
+            if (content) {
+                content = JSON.parse(content.toString())
+
+            } else {
+                res.writeHead(400)
+                res.end("No description found.")
+                return
+            }
+            if (content["description"]!=undefined) {
+                content["description"] = data.description
+                fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
                     res.writeHead(200)
-                    res.end(JSON.stringify(content["description"]))
+                    res.end("Successful update")
 
                 })
-            }else{
+            } else {
                 res.writeHead(400)
                 res.end("No description found.")
             }
@@ -525,7 +554,7 @@ function startTriggerScript(user, triggerId, db) {
                                 initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ")\n"
                             }
                         }
-                        var runAction = "util.runAction('" + config.actionsDir+"/" + '\',\'' + action + "',process, actualParameters) \n"
+                        var runAction = "util.runAction('" + config.actionsDir + "/" + '\',\'' + action + "',process, actualParameters) \n"
                         actionString = actionString + initParameters + runAction
                         console.log(actionString)
                     }
