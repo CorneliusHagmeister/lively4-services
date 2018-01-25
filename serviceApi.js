@@ -1,8 +1,8 @@
 var dataVault = require('./dataVault.json')
 const {exec} = require('child_process');
 const spawn = require('child_process').spawn;
-var actionsPath = "./services/"
-var triggerPath = "./services/"
+var actionsPath = "./services/actions"
+var triggerPath = "./services/watcher"
 var mongodb = require('mongodb');
 const fs = require('fs');
 
