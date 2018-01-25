@@ -8,6 +8,6 @@ module.exports = {
     servicesDir: './services',
     actionConfigsDir: "./services/actionConfigs",
     watcherConfigsDir: "./services/watcherConfigs",
-    watcherDir:"./services",
-    actionsDir:"./services"
+    watcherDir:"./services/watcher",
+    actionsDir:"./services/actions"
 };

@@ -145,6 +145,42 @@ module.exports = {
             }
         })
     },
+    getWatcherDescription: function(req,res,data,db){
+        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end("File not found")
+            }
+            if(content["description"]) {
+                content = JSON.parse(content)
+                res.writeHead(200)
+                res.end(JSON.stringify(content["description"]))
+            }else{
+                res.writeHead(400)
+                res.end("No description found.")
+            }
+        })
+    },
+    updateWatcherDescription: function(req,res,data,db){
+        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end("File not found")
+            }
+            if(content["description"]) {
+                content = JSON.parse(content)
+                content["description"]=data.description
+                fs.writeFile(config.watcherConfigsDir + "/" +(data.triggerId).replace(".js", ".json"),content , function (writeErr) {
+                    res.writeHead(200)
+                    res.end(JSON.stringify(content["description"]))
+
+                })
+            }else{
+                res.writeHead(400)
+                res.end("No description found.")
+            }
+        })
+    },
     createTrigger: function (req, res, data, db) {
         fs.writeFile(config.watcherDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
             if (writeErr) {
@@ -153,7 +189,7 @@ module.exports = {
                 res.end("The file already exists")
                 return
             }
-            fs.writeFile(config.watcherConfigsDir + "/" + data.name + ".json", "{}", {flag: 'wx'}, function (configErr) {
+            fs.writeFile(config.watcherConfigsDir + "/" + data.name + ".json", "{\"description\":\"\"}", {flag: 'wx'}, function (configErr) {
                 if (configErr) {
                     console.log(configErr)
                     res.writeHead(400)
@@ -231,6 +267,42 @@ module.exports = {
             }
         })
     },
+    getActionDescription: function(req,res,data,db){
+        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end("File not found")
+            }
+            if(content["description"]) {
+                content = JSON.parse(content)
+                res.writeHead(200)
+                res.end(JSON.stringify(content["description"]))
+            }else{
+                res.writeHead(400)
+                res.end("No description found.")
+            }
+        })
+    },
+    updateActionDescription: function(req,res,data,db){
+        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end("File not found")
+            }
+            if(content["description"]) {
+                    content = JSON.parse(content)
+                    content["description"]=data.description
+                fs.writeFile(config.actionConfigsDir + "/" +(data.actionId).replace(".js", ".json"),content , function (writeErr) {
+                    res.writeHead(200)
+                    res.end(JSON.stringify(content["description"]))
+
+                })
+            }else{
+                res.writeHead(400)
+                res.end("No description found.")
+            }
+        })
+    },
     createAction: function (req, res, data, db) {
         fs.writeFile(config.actionsDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
             if (writeErr) {
@@ -239,7 +311,7 @@ module.exports = {
                 res.end("The file already exists")
                 return
             }
-            fs.writeFile(config.actionConfigsDir + "/" + data.name + ".json", "{}", {flag: 'wx'}, function (configErr) {
+            fs.writeFile(config.actionConfigsDir + "/" + data.name + ".json", "{\"description\":\"\"}", {flag: 'wx'}, function (configErr) {
                 if (configErr) {
                     console.log(configErr)
                     res.writeHead(400)
