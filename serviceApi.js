@@ -3,6 +3,7 @@ const {exec} = require('child_process');
 const spawn = require('child_process').spawn;
 var actionsPath = "./services/"
 var triggerPath = "./services/"
+var config = require('./config');
 var mongodb = require('mongodb');
 const fs = require('fs');
 
@@ -12,8 +13,8 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("The given username does not exist")
-                res.end()
+                res.writeHead(400)
+                res.end("The given username does not exist")
             } else {
                 var credentials = result["credentials"]
                 credentials[data.type] = data.key
@@ -25,11 +26,11 @@ module.exports = {
                     }
                 }, function (errUpdate, resultUpdate) {
                     if (errUpdate) {
-                        res.write("The credential update didnt work")
-                        res.end()
+                        res.writeHead(400)
+                        res.end("The credential update didnt work")
                     } else {
-                        res.write("Succeful update")
-                        res.end()
+                        res.writeHead(200)
+                        res.end("Succeful update")
                     }
                 });
             }
@@ -40,12 +41,13 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("The given username does not exist")
-                res.end()
+                res.writeHead(400)
+                res.end("The given username does not exist")
+
             } else {
                 var credentials = result["credentials"];
-                res.write(credentials);
-                res.end();
+                res.writeHead(200);
+                res.end(credentials);
             }
         })
     },
@@ -54,8 +56,8 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("Something went wrong")
-                res.end()
+                res.writeHead(400)
+                res.end("Something went wrong")
             } else {
                 if (!result) {
                     newUser = {}
@@ -64,16 +66,16 @@ module.exports = {
                     newUser["credentials"] = {}
                     db.collection("users").insertOne(newUser, function (err, result) {
                         if (err) {
-                            res.write("The user update didnt work: " + err)
-                            res.end()
+                            res.writeHead(400)
+                            res.end("The user update didnt work: " + err)
                         } else {
-                            res.write("Succeful update")
-                            res.end()
+                            res.writeHead(200)
+                            res.end("Succeful update")
                         }
                     });
                 } else {
-                    res.write("The given username already exists")
-                    res.end()
+                    res.writeHead(400)
+                    res.end("The given username already exists")
                 }
             }
         })
@@ -83,11 +85,11 @@ module.exports = {
             user: data.user
         }, function (err, obj) {
             if (err) {
-                res.write("deletion error: " + err)
-                res.end()
+                res.writeHead(400)
+                res.end("deletion error: " + err)
             } else {
-                res.write("Succesful deletion")
-                res.end()
+                res.writeHead(200)
+                res.end("Succesful deletion")
             }
         })
     },
@@ -96,8 +98,8 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("Cant get user Triggers: " + err)
-                res.end()
+                res.writeHead(400)
+                res.end("Cant get user Triggers: " + err)
             } else {
                 if (result) {
                     var triggers = result["triggers"]
@@ -117,44 +119,71 @@ module.exports = {
             }
         })
     },
+    createTrigger: function (req, res, data, db) {
+        fs.writeFile(config.watcherDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
+            if (writeErr) {
+                console.log(writeErr)
+                res.writeHead(400)
+                res.end("The file already exists")
+                return
+            }
+            fs.writeFile(config.watcherConfigsDir + "/" + data.name + ".json", "{}", {flag: 'wx'}, function (configErr) {
+                if (configErr) {
+                    console.log(configErr)
+                    res.writeHead(400)
+                    res.end("The file already exists")
+                    return
+                }
+                res.writeHead(200)
+                res.end("The file was exists")
+                return
+
+            })
+        })
+    },
     assignTrigger: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
             if (err || !result) {
-                res.write("Cant find User")
-                res.end()
+                res.writeHead(400)
+                res.end("Cant find User")
             } else {
                 var triggers = result["triggers"]
-                triggers[replaceDots(data.triggerId)] = {
-                    running: false
-                }
-                db.collection("users").updateOne({
-                    user: data.user
-                }, {
-                    $set: {
-                        "triggers": triggers
+                fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+
+                    triggers[replaceDots(data.triggerId)] = {
+                        running: false,
+                        config: JSON.parse(content)
                     }
-                }, function (errUpdate, resultUpdate) {
-                    if (errUpdate) {
-                        res.write("The Trigger update didnt work: " + errUpdate)
-                        res.end()
-                    } else {
-                        res.write("resultUpdate")
-                        res.end()
-                    }
-                });
+                    db.collection("users").updateOne({
+                        user: data.user
+                    }, {
+                        $set: {
+                            "triggers": triggers
+                        }
+                    }, function (errUpdate, resultUpdate) {
+                        if (errUpdate) {
+                            res.writeHead(400)
+                            res.end("The Trigger update didnt work: " + errUpdate)
+                        } else {
+                            res.writeHead(200)
+                            res.end("resultUpdate")
+                        }
+                    });
+                })
             }
         })
-    },
+    }
+    ,
     removeTrigger: function (req, res, data, db) {
         stopTriggerScript(data.user, data.triggerId, db)
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("Cant find User: " + err)
-                res.end()
+                res.writeHead(400)
+                res.end("Cant find User: " + err)
             } else {
                 var triggers = result["triggers"]
                 delete triggers[replaceDots(data.triggerId)]
@@ -166,44 +195,72 @@ module.exports = {
                     }
                 }, function (errUpdate, resultUpdate) {
                     if (errUpdate) {
-                        res.write("The Trigger update didnt work")
-                        res.end()
+                        res.writeHead(400)
+                        res.end("The Trigger update didnt work")
                     } else {
-                        res.write("Sucessful Trigger update")
-                        res.end()
+                        res.writeHead(200)
+                        res.end("Sucessful Trigger update")
                     }
                 })
             }
         })
+    },
+    createAction: function (req, res, data, db) {
+        fs.writeFile(config.actionsDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
+            if (writeErr) {
+                console.log(writeErr)
+                res.writeHead(400)
+                res.end("The file already exists")
+                return
+            }
+            fs.writeFile(config.actionConfigsDir + "/" + data.name + ".json", "{}", {flag: 'wx'}, function (configErr) {
+                if (configErr) {
+                    console.log(configErr)
+                    res.writeHead(400)
+                    res.end("The file already exists")
+                    return
+                }
+                res.writeHead(200)
+                res.end("The file was created")
+
+            })
+
+        })
+
     },
     assignAction: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("Cant find User")
-                res.end()
+                res.writeHead(400)
+                res.end("Cant find User")
             } else {
                 var triggers = result["triggers"]
-                if (!triggers[replaceDots(data.triggerId)]["actions"]) {
-                    triggers[replaceDots(data.triggerId)]["actions"] = []
-                }
-                triggers[replaceDots(data.triggerId)]["actions"].push(data.actionId)
-                db.collection("users").updateOne({
-                    user: data.user
-                }, {
-                    $set: {
-                        "triggers": triggers
+                fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+                    if (!triggers[replaceDots(data.triggerId)]["actions"]) {
+                        triggers[replaceDots(data.triggerId)]["actions"] = []
                     }
-                }, function (err, result) {
-                    if (err) {
-                        res.write("The Action update didnt work")
-                        res.end()
-                    } else {
-                        res.write("Sucessful update")
-                        res.end()
-                    }
-                });
+                    triggers[replaceDots(data.triggerId)]["actions"].push({
+                        name: data.actionId,
+                        config: JSON.parse(content)
+                    })
+                    db.collection("users").updateOne({
+                        user: data.user
+                    }, {
+                        $set: {
+                            "triggers": triggers
+                        }
+                    }, function (err, result) {
+                        if (err) {
+                            res.writeHead(400)
+                            res.end("The Action update didnt work")
+                        } else {
+                            res.writeHead(200)
+                            res.end("Sucessful update")
+                        }
+                    });
+                })
             }
         })
     },
@@ -212,13 +269,14 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("Cant find User")
-                res.end()
+                res.writeHead(400)
+                res.end("Cant find User")
             } else {
                 var triggers = result["triggers"]
-                var index = triggers[replaceDots(data.triggerId)]["actions"].indexOf(data.actionId)
-                if (index > -1) {
-                    triggers[replaceDots(data.triggerId)]["actions"].splice(index, 1)
+                for (var i = 0; i < triggers[replaceDots(data.triggerId)]["actions"].length; i++) {
+                    if (triggers[replaceDots(data.triggerId)]["actions"][i].name == data.actionId) {
+                        triggers[replaceDots(data.triggerId)]["actions"].splice(i, 1)
+                    }
                 }
                 db.collection("users").update({
                     user: data.user
@@ -228,11 +286,11 @@ module.exports = {
                     }
                 }, function (err, result) {
                     if (err) {
-                        res.write("The Action deletion didnt work")
-                        res.end()
+                        res.writeHead(400)
+                        res.end("The Action deletion didnt work")
                     } else {
-                        res.write("Sucessful deletion")
-                        res.end()
+                        res.writeHead(200)
+                        res.end("Sucessful deletion")
                     }
                 });
             }
@@ -243,8 +301,8 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             if (err) {
-                res.write("Cant find User")
-                res.end()
+                res.writeHead(400)
+                res.end("Cant find User")
             } else {
                 var triggers = result["triggers"]
                 triggers[replaceDots(data.triggerId)]["running"] = true
@@ -256,12 +314,13 @@ module.exports = {
                     }
                 }, function (err, result) {
                     if (err) {
-                        res.write("The Action deletion didnt work")
-                        res.end()
+                        res.writeHead(400)
+                        res.end("The Action deletion didnt work")
                     } else {
                         startTriggerScript(data.user, data.triggerId, db, res);
-                        res.write("Sucessfully ran Trigger")
-                        res.end()
+                        res.writeHead(400)
+                        res.end("Sucessfully ran Trigger")
+
                     }
                 });
             }
@@ -274,16 +333,16 @@ module.exports = {
             if (result["triggers"][replaceDots(data.triggerId)]) {
                 result["triggers"][replaceDots(data.triggerId)]['running'] = false
                 stopTriggerScript(data.user, data.triggerId, db);
-                res.end()
+                res.writeHead(200)
+                res.end("Successfully stoped the trigger")
             } else {
                 console.error("The given triggerId could not be found");
-                res.write("The given triggerId could not be found")
-                res.end()
+                res.writeHead(400)
+                res.end("The given triggerId could not be found")
             }
         })
     },
     getTriggerLogs: function (req, res, data, db) {
-        console.log("inside  get logs");
         var trigger = replaceDots(data.triggerId)
         db.collection("logs").find({
             trigger: trigger
@@ -296,13 +355,14 @@ module.exports = {
                         resultString += "[" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "] " + result[i]["message"]
                     }
                     console.log(result);
+                    res.writeHead(200)
                     res.write(resultString)
                     res.end()
                 }
                 res.end()
             } else {
                 console.error("The given triggerId could not be found");
-                res.status(200)
+                res.writeHead(400)
                 res.write("The given triggerId could not be found")
                 res.end()
             }
@@ -336,55 +396,79 @@ function remove_logs(triggerId, user, db) {
 }
 
 function startTriggerScript(user, triggerId, db) {
-    fs.readFile(triggerPath + "" + triggerId, "utf8", function (err, data) {
+    fs.readFile(config.watcherDir + "/" + triggerId, "utf8", function (err, data) {
         if (err)
             return -1
         db.collection("users").findOne({
             user: user
         }, function (err, result) {
             data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
+            for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
+                data = data.replace("config(" + entry + ")", result["triggers"][replaceDots(triggerId)]["config"][entry])
+            }
             var actionString = "";
             var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
-            if(actionCall) {
-                actionCall=actionCall[0]
-                var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")"))
+            if (actionCall) {
+                actionCall = actionCall[0]
+                var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")")).split(',')
 
+                var actionString = ""
                 if (result["triggers"][replaceDots(triggerId)]["actions"]) {
                     for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
-                        var action = result["triggers"][replaceDots(triggerId)]["actions"][i]
-                        var spawnAction = "\n var child" + i + " = spawn('node',['"+actionsPath + action + "'," + actionParameters + "])\n"
-                        var pipeAction = "process.stdin.pipe(child" + i + ".stdin)\n child" + i + ".stdout.on('data',(data)=>{console.log('[" + action + "]'+data.toString());})"
-                        actionString = actionString + spawnAction + pipeAction + "\n"
+                        var action = result["triggers"][replaceDots(triggerId)]["actions"][i].name
+
+                        var initParameters =
+                            "var actualParameters = [] \n"
+                        for (var j = 0; j < actionParameters.length; j++) {
+                            if (actionParameters[j] === "") continue;
+                            if (typeof actionParameters[j] === "string") {
+                                initParameters = initParameters + "actualParameters.push('" + actionParameters[j] + "')\n"
+                            } else {
+                                initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ")\n"
+                            }
+                        }
+                        var runAction = "util.runAction('" + config.actionsDir+"/" + '\',\'' + action + "',process, actualParameters) \n"
+                        actionString = actionString + initParameters + runAction
+                        console.log(actionString)
                     }
                 }
                 data = data.replace(actionCall, actionString);
                 data = "var spawn = require('child_process').spawn;\n" + data;
             }
             console.log(data);
-            fs.writeFile("./tmpScript.js", data, function (writeErr) {
-                if (writeErr) {
-                    return -1
-                }
-                var child = spawn("node", ["./tmpScript.js"])
-                child.stdout.on('data', (data) => {
-                    //write log file
-                    create_log(triggerId, user, data.toString(), db)
-                    console.log(data.toString());
-                });
-                child.on('close', function (code) {
-                    //remove log file
-                    remove_logs(triggerId, user, db)
-                    //Here you can get the exit code of the script
-                });
-                var triggers = result["triggers"]
-                triggers[replaceDots(triggerId)]["pid"] = child.pid
-                db.collection("users").updateOne({
-                    user: user
-                }, {
-                    $set: {
-                        "triggers": triggers
+            fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
+                configContent = JSON.parse(configContent)
+                for (var key in configContent) {
+                    if (configContent.hasOwnProperty(key)) {
+
+                        data = data.replace("config(" + key + ")", "\"" + configContent[key] + "\"")
                     }
-                }, function (err, result) {
+                }
+                fs.writeFile("./tmpScript.js", data, function (writeErr) {
+                    if (writeErr) {
+                        return -1
+                    }
+                    var child = spawn("node", ["./tmpScript.js"])
+                    child.stdout.on('data', (data) => {
+                        //write log file
+                        create_log(triggerId, user, data.toString(), db)
+                        console.log(data.toString());
+                    });
+                    child.on('close', function (code) {
+                        //remove log file
+                        remove_logs(triggerId, user, db)
+                        //Here you can get the exit code of the script
+                    });
+                    var triggers = result["triggers"]
+                    triggers[replaceDots(triggerId)]["pid"] = child.pid
+                    db.collection("users").updateOne({
+                        user: user
+                    }, {
+                        $set: {
+                            "triggers": triggers
+                        }
+                    }, function (err, result) {
+                    })
                 })
             })
         })
@@ -399,7 +483,9 @@ function stopTriggerScript(user, triggerId, db) {
         // exec("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"])
         if (result) {
             if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
+                // windows
                 //exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
+                // linux
                 exec("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"])
                 remove_logs(triggerId, user, db)
             }
