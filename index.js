@@ -130,6 +130,12 @@ function dispatch(req, res) {
                             case '/updateWatcherDescription':
                                 serviceApi.updateWatcherDescription(req, res, data, database);
                                 return
+                            case '/updateConfig':
+                                serviceApi.updateConfig(req, res, data, database);
+                                return
+                            case '/getConfig':
+                                serviceApi.getConfig(req, res, data, database);
+                                return
                         }
                         if (req.url === "/get") {
                             postGet(req, res, data);

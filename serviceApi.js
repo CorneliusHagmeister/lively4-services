@@ -51,6 +51,47 @@ module.exports = {
             }
         })
     },
+    getConfig: function (req, res, data, db) {
+        db.collection("users").findOne({
+                user: data.user
+            }, function (err, result) {
+            try{
+                var config=result["triggers"][replaceDots(data.triggerId)]["config"]
+                jsonResponse(res, config)
+            }catch(err){
+                res.writeHead(400)
+                res.end("Something  went  wrong: "+err)
+            }
+        })
+    },
+    updateConfig: function (req, res, data, db) {
+        db.collection("users").findOne({
+            user: data.user
+        }, function (err, result) {
+            try{
+                var triggers=result["triggers"]
+                triggers[replaceDots(data.triggerId)]["config"]=JSON.parse(data.config)
+                db.collection("users").updateOne({
+                    user: data.user
+                }, {
+                    $set: {
+                        "triggers": triggers
+                    }
+                }, function (errUpdate, resultUpdate) {
+                    if(errUpdate){
+                        res.writeHead(400)
+                        res.end("Couldnt update config")
+                    }else{
+                        res.writeHead(200)
+                        res.end("Successfully updated config")
+                    }
+                })
+            }catch(err){
+                res.writeHead(400)
+                res.end("Something  went  wrong: "+err)
+            }
+        })
+    },
     addUser: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -147,7 +188,7 @@ module.exports = {
     },
     getWatcherDescription: function (req, res, data, db) {
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
-            if (err ) {
+            if (err) {
                 res.writeHead(400)
                 res.end("File not found")
                 return
@@ -159,7 +200,7 @@ module.exports = {
                 res.end("No description found1.")
                 return
             }
-            if (content["description"]!=undefined) {
+            if (content["description"] != undefined) {
                 res.writeHead(200)
                 res.end(JSON.stringify(content["description"]))
             } else {
@@ -182,7 +223,7 @@ module.exports = {
                 res.end("No description found.")
                 return
             }
-            if (content["description"]!=undefined) {
+            if (content["description"] != undefined) {
                 content["description"] = data.description
                 fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
                     res.writeHead(200)
@@ -295,7 +336,7 @@ module.exports = {
                 res.end("No description found.")
                 return
             }
-            if (content["description"]!=undefined) {
+            if (content["description"] != undefined) {
                 res.writeHead(200)
                 res.end(JSON.stringify(content["description"]))
             } else {
@@ -319,7 +360,7 @@ module.exports = {
                 res.end("No description found.")
                 return
             }
-            if (content["description"]!=undefined) {
+            if (content["description"] != undefined) {
                 content["description"] = data.description
                 fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
                     res.writeHead(200)
