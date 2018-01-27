@@ -70,12 +70,8 @@ module.exports = {
         }, function (err, result) {
             try{
                 var triggers=result["triggers"]
-                try{
-                    triggers[replaceDots(data.triggerId)]["config"]=JSON.parse(data.config)
-                }catch(err){
+                    // triggers[replaceDots(data.triggerId)]["config"]=JSON.parse(data.config)
                     triggers[replaceDots(data.triggerId)]["config"]=data.config
-                }
-                triggers[replaceDots(data.triggerId)]["config"]=JSON.parse(data.config)
                 db.collection("users").updateOne({
                     user: data.user
                 }, {
