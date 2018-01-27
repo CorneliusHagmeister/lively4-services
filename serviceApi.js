@@ -462,7 +462,7 @@ module.exports = {
             db.collection("users").findOne({
                 user: data.user
             }, function (err, result) {
-                if (err) {
+                if (err||!result) {
                     res.writeHead(400)
                     res.end("Cant find User")
                 } else {
@@ -493,7 +493,7 @@ module.exports = {
                     })
                 }
             })
-        }catch(err){
+        } catch (err) {
             res.writeHead(400)
             res.end(err)
         }
