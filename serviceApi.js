@@ -458,40 +458,45 @@ module.exports = {
 
     },
     assignAction: function (req, res, data, db) {
-        db.collection("users").findOne({
-            user: data.user
-        }, function (err, result) {
-            if (err) {
-                res.writeHead(400)
-                res.end("Cant find User")
-            } else {
-                var triggers = result["triggers"]
-                fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
-                    if (!triggers[replaceDots(data.triggerId)]["actions"]) {
-                        triggers[replaceDots(data.triggerId)]["actions"] = []
-                    }
-                    triggers[replaceDots(data.triggerId)]["actions"].push({
-                        name: data.actionId,
-                        config: JSON.parse(content)
+        try {
+            db.collection("users").findOne({
+                user: data.user
+            }, function (err, result) {
+                if (err) {
+                    res.writeHead(400)
+                    res.end("Cant find User")
+                } else {
+                    var triggers = result["triggers"]
+                    fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+                        if (!triggers[replaceDots(data.triggerId)]["actions"]) {
+                            triggers[replaceDots(data.triggerId)]["actions"] = []
+                        }
+                        triggers[replaceDots(data.triggerId)]["actions"].push({
+                            name: data.actionId,
+                            config: JSON.parse(content)
+                        })
+                        db.collection("users").updateOne({
+                            user: data.user
+                        }, {
+                            $set: {
+                                "triggers": triggers
+                            }
+                        }, function (err, result) {
+                            if (err) {
+                                res.writeHead(400)
+                                res.end("The Action update didnt work")
+                            } else {
+                                res.writeHead(200)
+                                res.end("Sucessful update")
+                            }
+                        });
                     })
-                    db.collection("users").updateOne({
-                        user: data.user
-                    }, {
-                        $set: {
-                            "triggers": triggers
-                        }
-                    }, function (err, result) {
-                        if (err) {
-                            res.writeHead(400)
-                            res.end("The Action update didnt work")
-                        } else {
-                            res.writeHead(200)
-                            res.end("Sucessful update")
-                        }
-                    });
-                })
-            }
-        })
+                }
+            })
+        }catch(err){
+            res.writeHead(400)
+            res.end(err)
+        }
     },
     removeAction: function (req, res, data, db) {
         db.collection("users").findOne({
