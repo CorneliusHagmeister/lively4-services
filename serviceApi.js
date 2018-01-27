@@ -51,27 +51,26 @@ module.exports = {
             }
         })
     },
-    getConfig: function (req, res, data, db) {
-        db.collection("users").findOne({
-                user: data.user
-            }, function (err, result) {
-            try{
-                var config=result["triggers"][replaceDots(data.triggerId)]["config"]
-                jsonResponse(res, config)
-            }catch(err){
-                res.writeHead(400)
-                res.end("Something  went  wrong: "+err)
-            }
-        })
-    },
-    updateConfig: function (req, res, data, db) {
+    getWatcherConfig: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
-            try{
-                var triggers=result["triggers"]
-                    // triggers[replaceDots(data.triggerId)]["config"]=JSON.parse(data.config)
-                    triggers[replaceDots(data.triggerId)]["config"]=data.config
+            try {
+                var config = result["triggers"][replaceDots(data.triggerId)]["config"]
+                jsonResponse(res, config)
+            } catch (err) {
+                res.writeHead(400)
+                res.end("Something  went  wrong: " + err)
+            }
+        })
+    },
+    updateWatcherConfig: function (req, res, data, db) {
+        db.collection("users").findOne({
+            user: data.user
+        }, function (err, result) {
+            try {
+                var triggers = result["triggers"]
+                triggers[replaceDots(data.triggerId)]["config"] = data.config
                 db.collection("users").updateOne({
                     user: data.user
                 }, {
@@ -79,17 +78,58 @@ module.exports = {
                         "triggers": triggers
                     }
                 }, function (errUpdate, resultUpdate) {
-                    if(errUpdate){
+                    if (errUpdate) {
                         res.writeHead(400)
                         res.end("Couldnt update config")
-                    }else{
+                    } else {
                         res.writeHead(200)
                         res.end("Successfully updated config")
                     }
                 })
-            }catch(err){
+            } catch (err) {
                 res.writeHead(400)
-                res.end("Something  went  wrong: "+err)
+                res.end("Something  went  wrong: " + err)
+            }
+        })
+    },
+    getActionConfig: function (req, res, data, db) {
+        db.collection("users").findOne({
+            user: data.user
+        }, function (err, result) {
+            try {
+                var config = result["triggers"][replaceDots(data.triggerId)]["config"]
+                jsonResponse(res, config)
+            } catch (err) {
+                res.writeHead(400)
+                res.end("Something  went  wrong: " + err)
+            }
+        })
+    },
+    updateActionConfig: function (req, res, data, db) {
+        db.collection("users").findOne({
+            user: data.user
+        }, function (err, result) {
+            try {
+                var triggers = result["triggers"]
+                triggers[replaceDots(data.triggerId)]["actions"][data.actionId]["config"] = data.config
+                db.collection("users").updateOne({
+                    user: data.user
+                }, {
+                    $set: {
+                        "triggers": triggers
+                    }
+                }, function (errUpdate, resultUpdate) {
+                    if (errUpdate) {
+                        res.writeHead(400)
+                        res.end("Couldnt update config")
+                    } else {
+                        res.writeHead(200)
+                        res.end("Successfully updated config")
+                    }
+                })
+            } catch (err) {
+                res.writeHead(400)
+                res.end("Something  went  wrong: " + err)
             }
         })
     },
@@ -188,54 +228,64 @@ module.exports = {
         })
     },
     getWatcherDescription: function (req, res, data, db) {
-        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
-            if (err) {
-                res.writeHead(400)
-                res.end("File not found")
-                return
-            }
-            if (content) {
-                content = JSON.parse(content.toString())
-            } else {
-                res.writeHead(400)
-                res.end("No description found1.")
-                return
-            }
-            if (content["description"] != undefined) {
-                res.writeHead(200)
-                res.end(JSON.stringify(content["description"]))
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-            }
-        })
-    },
-    updateWatcherDescription: function (req, res, data, db) {
-        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
-            if (err) {
-                res.writeHead(400)
-                res.end("File not found")
-                return
-            }
-            if (content) {
-                content = JSON.parse(content.toString())
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-                return
-            }
-            if (content["description"] != undefined) {
-                content["description"] = data.description
-                fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
+        try {
+            fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+                if (err) {
+                    res.writeHead(400)
+                    res.end("File not found")
+                    return
+                }
+                if (content) {
+                    content = JSON.parse(content.toString())
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found1.")
+                    return
+                }
+                if (content["description"] != undefined) {
                     res.writeHead(200)
                     res.end(JSON.stringify(content["description"]))
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                }
+            })
+        } catch (err) {
+            res.writeHead(400)
+            res.end("Prob file not found :" + err)
+        }
+    },
+    updateWatcherDescription: function (req, res, data, db) {
+        try {
+            fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+                if (err) {
+                    res.writeHead(400)
+                    res.end("File not found")
+                    return
+                }
+                if (content) {
+                    content = JSON.parse(content.toString())
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                    return
+                }
+                if (content["description"] != undefined) {
+                    content["description"] = data.description
+                    fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
+                        res.writeHead(200)
+                        res.end(JSON.stringify(content["description"]))
 
-                })
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-            }
-        })
+                    })
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                }
+            })
+        } catch (err) {
+            res.writeHead(400)
+            res.end("Prob file not found :" + err)
+        }
     },
     createTrigger: function (req, res, data, db) {
         fs.writeFile(config.watcherDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
@@ -324,55 +374,65 @@ module.exports = {
         })
     },
     getActionDescription: function (req, res, data, db) {
-        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
-            if (err || !content) {
-                res.writeHead(400)
-                res.end("File not found")
-                return
-            }
-            if (content) {
-                content = JSON.parse(content.toString())
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-                return
-            }
-            if (content["description"] != undefined) {
-                res.writeHead(200)
-                res.end(JSON.stringify(content["description"]))
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-            }
-        })
+        try {
+            fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+                if (err || !content) {
+                    res.writeHead(400)
+                    res.end("File not found")
+                    return
+                }
+                if (content) {
+                    content = JSON.parse(content.toString())
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                    return
+                }
+                if (content["description"] != undefined) {
+                    res.writeHead(200)
+                    res.end(JSON.stringify(content["description"]))
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                }
+            })
+        } catch (err) {
+            res.writeHead(400)
+            res.end("Prob file not found :" + err)
+        }
     },
     updateActionDescription: function (req, res, data, db) {
-        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
-            if (err) {
-                res.writeHead(400)
-                res.end("File not found")
-                return
-            }
-            if (content) {
-                content = JSON.parse(content.toString())
+        try {
+            fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+                if (err) {
+                    res.writeHead(400)
+                    res.end("File not found")
+                    return
+                }
+                if (content) {
+                    content = JSON.parse(content.toString())
 
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-                return
-            }
-            if (content["description"] != undefined) {
-                content["description"] = data.description
-                fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
-                    res.writeHead(200)
-                    res.end("Successful update")
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                    return
+                }
+                if (content["description"] != undefined) {
+                    content["description"] = data.description
+                    fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), JSON.stringify(content), function (writeErr) {
+                        res.writeHead(200)
+                        res.end("Successful update")
 
-                })
-            } else {
-                res.writeHead(400)
-                res.end("No description found.")
-            }
-        })
+                    })
+                } else {
+                    res.writeHead(400)
+                    res.end("No description found.")
+                }
+            })
+        } catch (err) {
+            res.writeHead(400)
+            res.end("Prob file not found :" + err)
+        }
     },
     createAction: function (req, res, data, db) {
         fs.writeFile(config.actionsDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
