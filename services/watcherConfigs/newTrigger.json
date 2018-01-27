@@ -1,0 +1,7 @@
+{"description":"This is some description of newTrigger",
+  "config":{
+"somekey":"somevalue",
+"anotherKey":"anotherValue",
+"wowAnotherOne":"Yep thats right"
+  }
+}
