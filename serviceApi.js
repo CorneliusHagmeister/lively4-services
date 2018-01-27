@@ -97,8 +97,14 @@ module.exports = {
             user: data.user
         }, function (err, result) {
             try {
-                var config = result["triggers"][replaceDots(data.triggerId)]["config"]
-                jsonResponse(res, config)
+
+                var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
+                for(var i =0;i<actions.length;i++){
+                    if(actions[i].name===data.actionId){
+                        jsonResponse(res, actions[i]["config"])
+                        return
+                    }
+                }
             } catch (err) {
                 res.writeHead(400)
                 res.end("Something  went  wrong: " + err)
