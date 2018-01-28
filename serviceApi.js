@@ -603,7 +603,7 @@ module.exports = {
                         date = new Date(result[i]["date"])
                         resultString += "[" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "] " + result[i]["message"]
                     }
-                    console.log(result);
+                    console.log("result: "+result);
                     res.writeHead(200)
                     res.end(resultString)
                 }else{
@@ -652,32 +652,38 @@ function startTriggerScript(user, triggerId, db) {
         db.collection("users").findOne({
             user: user
         }, function (err, result) {
+            console.log("data before: "+data)
+            data = "var utils = require('./utils'); \n"+data
             data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
             for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
-                data = data.replace("config(" + entry + ")", result["triggers"][replaceDots(triggerId)]["config"][entry])
+                data = data.replace("config(" + entry + ")", "'"+result["triggers"][replaceDots(triggerId)]["config"][entry]+"'")
             }
             var actionString = "";
             var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
             if (actionCall) {
                 actionCall = actionCall[0]
                 var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")")).split(',')
-
+                for(var i =0;i<actionParameters.length;i++){
+                    if(actionParameters[i]===','){
+                        actionParameters.splice(i,1);
+                    }
+                }
                 var actionString = ""
                 if (result["triggers"][replaceDots(triggerId)]["actions"]) {
                     for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
                         var action = result["triggers"][replaceDots(triggerId)]["actions"][i].name
 
                         var initParameters =
-                            "var actualParameters = [] \n"
+                            "var actualParameters = []; \n"
                         for (var j = 0; j < actionParameters.length; j++) {
                             if (actionParameters[j] === "") continue;
                             if (typeof actionParameters[j] === "string") {
-                                initParameters = initParameters + "actualParameters.push('" + actionParameters[j] + "')\n"
+                                initParameters = initParameters + "actualParameters.push('" + actionParameters[j] + "');\n"
                             } else {
-                                initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ")\n"
+                                initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             }
                         }
-                        var runAction = "util.runAction('" + config.actionsDir + "/" + '\',\'' + action + "',process, actualParameters) \n"
+                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action + "',process, actualParameters); \n"
                         actionString = actionString + initParameters + runAction
                         console.log(actionString)
                     }
@@ -685,7 +691,7 @@ function startTriggerScript(user, triggerId, db) {
                 data = data.replace(actionCall, actionString);
                 data = "var spawn = require('child_process').spawn;\n" + data;
             }
-            console.log(data);
+            console.log("data: "+ data);
             fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
                 configContent = JSON.parse(configContent)
                 for (var key in configContent) {
@@ -702,6 +708,11 @@ function startTriggerScript(user, triggerId, db) {
                     child.stdout.on('data', (data) => {
                         //write log file
                         create_log(triggerId, user, data.toString(), db)
+                        console.log(data.toString());
+                    });
+                    child.stderr.on('data', (data) => {
+                        //write log file
+                        // create_log(triggerId, user, data.toString(), db)
                         console.log(data.toString());
                     });
                     child.on('close', function (code) {
@@ -734,7 +745,7 @@ function stopTriggerScript(user, triggerId, db) {
         if (result) {
             if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
                 // windows
-                //exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
+                // exec("taskkill /pid " + result["triggers"][replaceDots(triggerId)]["pid"] + " /f")
                 // linux
                 exec("kill -9 " + result["triggers"][replaceDots(triggerId)]["pid"])
                 remove_logs(triggerId, user, db)
