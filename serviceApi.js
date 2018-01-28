@@ -37,6 +37,10 @@ module.exports = {
         })
     },
     getCredentials: function (req, res, data, db) {
+        if (!data.user) {
+            res.writeHead(400);
+            res.end("Please send user in payload")
+        }
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
