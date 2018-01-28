@@ -46,15 +46,20 @@ function dispatch(req, res) {
                 });
                 return;
             }
-
-            var matches = portForwardMatcher.exec(req.url);
-            if (matches) {
-                var port = matches[1];
-                req.url = matches[2];
-                proxy.web(req, res, {
-                    target: 'http://localhost:' + parseInt(port)
-                });
-                return;
+            try {
+                var matches = portForwardMatcher.exec(req.url);
+                console.log(matches)
+                console.log("delimiter")
+                if (matches) {
+                    var port = matches[1];
+                    req.url = matches[2];
+                    proxy.web(req, res, {
+                        target: 'http://localhost:' + parseInt(port)
+                    });
+                    return;
+                }
+            }catch(err){
+                console.log(err)
             }
 
             if (req.method === "GET") {
