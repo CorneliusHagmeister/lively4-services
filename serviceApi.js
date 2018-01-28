@@ -99,8 +99,8 @@ module.exports = {
             try {
 
                 var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
-                for(var i =0;i<actions.length;i++){
-                    if(actions[i].name===data.actionId){
+                for (var i = 0; i < actions.length; i++) {
+                    if (actions[i].name === data.actionId) {
                         jsonResponse(res, actions[i]["config"])
                         return
                     }
@@ -117,7 +117,7 @@ module.exports = {
         }, function (err, result) {
             try {
                 var triggers = result["triggers"]
-                for(var i =0;i<triggers[replaceDots(data.triggerId)]["actions"].length;i++) {
+                for (var i = 0; i < triggers[replaceDots(data.triggerId)]["actions"].length; i++) {
                     if (triggers[replaceDots(data.triggerId)]["actions"][i]["name"] == data.actionId) {
                         triggers[replaceDots(data.triggerId)]["actions"][i]["config"] = data.config
                     }
@@ -472,7 +472,7 @@ module.exports = {
             db.collection("users").findOne({
                 user: data.user
             }, function (err, result) {
-                if (err||!result) {
+                if (err || !result) {
                     res.writeHead(400)
                     res.end("Cant find User")
                 } else {
@@ -512,31 +512,36 @@ module.exports = {
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
-            if (err) {
+            if (err||!result) {
                 res.writeHead(400)
                 res.end("Cant find User")
             } else {
-                var triggers = result["triggers"]
-                for (var i = 0; i < triggers[replaceDots(data.triggerId)]["actions"].length; i++) {
-                    if (triggers[replaceDots(data.triggerId)]["actions"][i].name == data.actionId) {
-                        triggers=triggers[replaceDots(data.triggerId)]["actions"].splice(i, 1)
+                try {
+                    var triggers = result["triggers"]
+                    for (var i = 0; i < triggers[replaceDots(data.triggerId)]["actions"].length; i++) {
+                        if (triggers[replaceDots(data.triggerId)]["actions"][i].name == data.actionId) {
+                            triggers = triggers[replaceDots(data.triggerId)]["actions"].splice(i, 1)
+                        }
                     }
+                    db.collection("users").update({
+                        user: data.user
+                    }, {
+                        $set: {
+                            "triggers": triggers
+                        }
+                    }, function (err, result) {
+                        if (err) {
+                            res.writeHead(400)
+                            res.end("The Action deletion didnt work")
+                        } else {
+                            res.writeHead(200)
+                            res.end("Sucessful deletion")
+                        }
+                    });
+                }catch(err){
+                    res.writeHead(400)
+                    res.end(err)
                 }
-                db.collection("users").update({
-                    user: data.user
-                }, {
-                    $set: {
-                        "triggers": triggers
-                    }
-                }, function (err, result) {
-                    if (err) {
-                        res.writeHead(400)
-                        res.end("The Action deletion didnt work")
-                    } else {
-                        res.writeHead(200)
-                        res.end("Sucessful deletion")
-                    }
-                });
             }
         })
     },
