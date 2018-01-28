@@ -686,14 +686,14 @@ function startTriggerScript(user, triggerId, db) {
             //     data = "var spawn = require('child_process').spawn;\n" + data;
             // }
             // console.log(data);
-            fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
-                configContent = JSON.parse(configContent)
-                for (var key in configContent) {
-                    if (configContent.hasOwnProperty(key)) {
-
-                        data = data.replace("config(" + key + ")", "\"" + configContent[key] + "\"")
-                    }
-                }
+            // fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
+            //     configContent = JSON.parse(configContent)
+            //     for (var key in configContent) {
+            //         if (configContent.hasOwnProperty(key)) {
+            //
+            //             data = data.replace("config(" + key + ")", "\"" + configContent[key] + "\"")
+            //         }
+            //     }
                 fs.writeFile("./tmpScript.js", data, function (writeErr) {
                     if (writeErr) {
                         return -1
@@ -720,7 +720,7 @@ function startTriggerScript(user, triggerId, db) {
                     }, function (err, result) {
                     })
                 })
-            })
+            // })
         })
     });
 }
