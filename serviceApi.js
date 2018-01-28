@@ -520,7 +520,7 @@ module.exports = {
                     var triggers = result["triggers"]
                     for (var i = 0; i < triggers[replaceDots(data.triggerId)]["actions"].length; i++) {
                         if (triggers[replaceDots(data.triggerId)]["actions"][i].name == data.actionId) {
-                            triggers = triggers[replaceDots(data.triggerId)]["actions"].splice(i, 1)
+                            triggers[replaceDots(data.triggerId)]["actions"].splice(i, 1)
                         }
                     }
                     db.collection("users").update({
