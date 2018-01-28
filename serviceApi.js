@@ -37,9 +37,11 @@ module.exports = {
         })
     },
     getCredentials: function (req, res, data, db) {
+        console.log("Inside getCredentials for ", data.user);
         if (!data.user) {
             res.writeHead(400);
-            res.end("Please send user in payload")
+            res.end("Please send user in payload");
+            return;
         }
         db.collection("users").findOne({
             user: data.user
