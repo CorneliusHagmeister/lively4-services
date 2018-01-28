@@ -117,7 +117,11 @@ module.exports = {
         }, function (err, result) {
             try {
                 var triggers = result["triggers"]
-                triggers[replaceDots(data.triggerId)]["actions"][data.actionId]["config"] = data.config
+                for(var i =0;i<triggers[replaceDots(data.triggerId)]["actions"].length;i++) {
+                    if (triggers[replaceDots(data.triggerId)]["actions"][i]["name"] == data.actionId) {
+                        triggers[replaceDots(data.triggerId)]["actions"][i]["config"] = data.config
+                    }
+                }
                 db.collection("users").updateOne({
                     user: data.user
                 }, {
