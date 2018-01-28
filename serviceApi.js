@@ -52,8 +52,10 @@ module.exports = {
 
             } else {
                 var credentials = result["credentials"];
-                res.writeHead(200);
-                res.end(credentials);
+                // res.writeHead(200);
+                // res.end(credentials);
+                console.log("sending json response with: ", credentials);
+                jsonResponse(res, credentials);
             }
         })
     },
