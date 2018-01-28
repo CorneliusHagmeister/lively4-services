@@ -567,7 +567,7 @@ module.exports = {
                         res.end("The Action deletion didnt work")
                     } else {
                         startTriggerScript(data.user, data.triggerId, db, res);
-                        res.writeHead(400)
+                        res.writeHead(200)
                         res.end("Sucessfully ran Trigger")
 
                     }
