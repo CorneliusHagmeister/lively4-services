@@ -653,47 +653,47 @@ function startTriggerScript(user, triggerId, db) {
             user: user
         }, function (err, result) {
             data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
-            // for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
-            //     data = data.replace("config(" + entry + ")", result["triggers"][replaceDots(triggerId)]["config"][entry])
-            // }
-            // var actionString = "";
-            // var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
-            // if (actionCall) {
-            //     actionCall = actionCall[0]
-            //     var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")")).split(',')
-            //
-            //     var actionString = ""
-            //     if (result["triggers"][replaceDots(triggerId)]["actions"]) {
-            //         for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
-            //             var action = result["triggers"][replaceDots(triggerId)]["actions"][i].name
-            //
-            //             var initParameters =
-            //                 "var actualParameters = [] \n"
-            //             for (var j = 0; j < actionParameters.length; j++) {
-            //                 if (actionParameters[j] === "") continue;
-            //                 if (typeof actionParameters[j] === "string") {
-            //                     initParameters = initParameters + "actualParameters.push('" + actionParameters[j] + "')\n"
-            //                 } else {
-            //                     initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ")\n"
-            //                 }
-            //             }
-            //             var runAction = "util.runAction('" + config.actionsDir + "/" + '\',\'' + action + "',process, actualParameters) \n"
-            //             actionString = actionString + initParameters + runAction
-            //             console.log(actionString)
-            //         }
-            //     }
-            //     data = data.replace(actionCall, actionString);
-            //     data = "var spawn = require('child_process').spawn;\n" + data;
-            // }
-            // console.log(data);
-            // fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
-            //     configContent = JSON.parse(configContent)
-            //     for (var key in configContent) {
-            //         if (configContent.hasOwnProperty(key)) {
-            //
-            //             data = data.replace("config(" + key + ")", "\"" + configContent[key] + "\"")
-            //         }
-            //     }
+            for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
+                data = data.replace("config(" + entry + ")", result["triggers"][replaceDots(triggerId)]["config"][entry])
+            }
+            var actionString = "";
+            var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
+            if (actionCall) {
+                actionCall = actionCall[0]
+                var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")")).split(',')
+
+                var actionString = ""
+                if (result["triggers"][replaceDots(triggerId)]["actions"]) {
+                    for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
+                        var action = result["triggers"][replaceDots(triggerId)]["actions"][i].name
+
+                        var initParameters =
+                            "var actualParameters = [] \n"
+                        for (var j = 0; j < actionParameters.length; j++) {
+                            if (actionParameters[j] === "") continue;
+                            if (typeof actionParameters[j] === "string") {
+                                initParameters = initParameters + "actualParameters.push('" + actionParameters[j] + "')\n"
+                            } else {
+                                initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ")\n"
+                            }
+                        }
+                        var runAction = "util.runAction('" + config.actionsDir + "/" + '\',\'' + action + "',process, actualParameters) \n"
+                        actionString = actionString + initParameters + runAction
+                        console.log(actionString)
+                    }
+                }
+                data = data.replace(actionCall, actionString);
+                data = "var spawn = require('child_process').spawn;\n" + data;
+            }
+            console.log(data);
+            fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
+                configContent = JSON.parse(configContent)
+                for (var key in configContent) {
+                    if (configContent.hasOwnProperty(key)) {
+
+                        data = data.replace("config(" + key + ")", "\"" + configContent[key] + "\"")
+                    }
+                }
                 fs.writeFile("./tmpScript.js", data, function (writeErr) {
                     if (writeErr) {
                         return -1
@@ -720,7 +720,7 @@ function startTriggerScript(user, triggerId, db) {
                     }, function (err, result) {
                     })
                 })
-            // })
+            })
         })
     });
 }
