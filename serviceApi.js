@@ -669,8 +669,10 @@ function startTriggerScript(user, triggerId, db) {
             }
 // =======
             var credentials = data.match(/credentials\[.*\]/)
-            for(var i=0;i<credentials.length;i++){
-                data=data.replace(credentials[i],result["credentials"][credentials[0].substring(credentials[0].indexOf("[")+1,credentials[0].lastIndexOf("]"))])
+            if(credentials) {
+                for (var i = 0; i < credentials.length; i++) {
+                    data = data.replace(credentials[i], result["credentials"][credentials[0].substring(credentials[0].indexOf("[") + 1, credentials[0].lastIndexOf("]"))])
+                }
             }
             // data = data.replace("credentials[dropbox]", "'" + result["credentials"]["dropbox"] + "'")
 // >>>>>>> Stashed changes
