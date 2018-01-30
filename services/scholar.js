@@ -19,5 +19,5 @@ scholar.search(paper_title)
     })
     .catch(function(err) {
         console.log(err);
-        dbx.filesUpload({ path: PATH + '/test.js', contents: "If google scholar would be working from Heroku, we would upload an updated version of your bibtex })
+        dbx.filesUpload({ path: PATH + '/test.js', contents: "If google scholar would be working from Heroku, we would upload an updated version of your bibtex" })
         })

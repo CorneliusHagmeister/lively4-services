@@ -660,12 +660,20 @@ function startTriggerScript(user, triggerId, db) {
         db.collection("users").findOne({
             user: user
         }, function (err, result) {
+// <<<<<<< Updated upstream
             console.log("data before: "+data)
             data = "var utils = require('./utils'); \n"+data
-            data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
+            // data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
             for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
-                data = data.replace("config(" + entry + ")", "'"+result["triggers"][replaceDots(triggerId)]["config"][entry]+"'")
+                data = data.replace("config[" + entry + "]", "'"+result["triggers"][replaceDots(triggerId)]["config"][entry]+"'")
             }
+// =======
+            var credentials = data.match(/credentials\[.*\]/)
+            for(var i=0;i<credentials.length;i++){
+                data=data.replace(credentials[i],result["credentials"][credentials[0].substring(credentials[0].indexOf("[")+1,credentials[0].lastIndexOf("]"))])
+            }
+            // data = data.replace("credentials[dropbox]", "'" + result["credentials"]["dropbox"] + "'")
+// >>>>>>> Stashed changes
             var actionString = "";
             var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
             if (actionCall) {
