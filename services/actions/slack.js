@@ -2,16 +2,16 @@ var request = require('request');
 
 var webhook = config(webhook);
 
-var payload={"text":"Hello from a lively action.\n(To show off how diligient some people are...)"};
-payload = JSON.stringify(payload);
-
+var text = "Hello from a lively action.\n";
 try {
-    console.log(process.argv[2]));
+    text += process.argv[2] + "\n";
+    text += config(text);
 } catch (e) {
-
-} finally {
-
+    console.log(e);
 }
+
+var payload={"text":text};
+payload = JSON.stringify(payload);
 
 request.post({url: webhook, body: payload}, function(err, res){
     if(err){console.log(err)};
