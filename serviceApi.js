@@ -327,6 +327,48 @@ module.exports = {
             })
         })
     },
+    getWatcherConfigTemplate:function(){
+        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end(err)
+            }else{
+                jsonResponse(res, content);
+            }
+        })
+    },
+    updateWatcherConfigTemplate:function(){
+        fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), {flag: 'wx'}, function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end(err)
+            }else{
+                res.writeHead(200)
+                res.end("Successful template update");
+            }
+        })
+    },
+    getActionConfigTemplate:function(){
+        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end(err)
+            }else{
+                jsonResponse(res, content);
+            }
+        })
+    },
+    updateActionConfigTemplate:function(){
+        fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), {flag: 'wx'}, function (err, content) {
+            if(err){
+                res.writeHead(400)
+                res.end(err)
+            }else{
+                res.writeHead(200)
+                res.end("Successful template update");
+            }
+        })
+    },
     assignTrigger: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user

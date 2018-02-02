@@ -147,6 +147,18 @@ function dispatch(req, res) {
                             case '/updateActionConfig':
                                 serviceApi.updateActionConfig(req, res, data, database);
                                 return
+                            case '/getWatcherConfigTemplate':
+                                serviceApi.getWatcherConfigTemplate(req, res, data, database);
+                                return
+                            case '/updateWatcherConfigTemplate':
+                                serviceApi.updateWatcherConfigTemplate(req, res, data, database);
+                                return
+                            case '/getActionConfigTemplate':
+                                serviceApi.getActionConfigTemplate(req, res, data, database);
+                                return
+                            case '/updateActionConfigTemplate':
+                                serviceApi.updateActionConfigTemplate(req, res, data, database);
+                                return
                         }
                         if (req.url === "/get") {
                             postGet(req, res, data);
