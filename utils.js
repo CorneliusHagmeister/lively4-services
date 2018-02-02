@@ -2,17 +2,19 @@ var tmpPath = "./"
 var config = require('./config');
 const spawn = require('child_process').spawn;
 const fs = require('fs');
+var mongodb = require('mongodb');
+
 module.exports = {
-    runAction: function (actionsPath, actionId, process, actionParameters) {
+    runAction: function (actionsPath, actionId,configContent, process, actionParameters) {
+        configContent = JSON.parse(configContent)
         fs.readFile(actionsPath + actionId, 'utf8', function (err, content) {
             console.log(config.actionConfigsDir + '/' + actionId.replace(".js", ".json"))
-            fs.readFile(config.actionConfigsDir + '/' + actionId.replace(".js", ".json"), 'utf8', function (err, configContent) {
                 require('crypto').randomBytes(48, function (err, buffer) {
                     configContent=JSON.parse(configContent)
                     for (var key in configContent) {
                         if( configContent.hasOwnProperty(key) ) {
 
-                            content = content.replace("config(" + key + ")", "\""+configContent[key]+"\"")
+                            content = content.replace("config[" + key + "]", "\""+configContent[key]+"\"")
                         }
                     }
                     var token = buffer.toString('hex');
@@ -39,6 +41,5 @@ module.exports = {
                     })
                 })
             })
-        })
     }
 }
