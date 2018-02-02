@@ -327,7 +327,7 @@ module.exports = {
             })
         })
     },
-    getWatcherConfigTemplate:function(){
+    getWatcherConfigTemplate:function(req, res, data, db){
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
             if(err){
                 res.writeHead(400)
@@ -337,7 +337,7 @@ module.exports = {
             }
         })
     },
-    updateWatcherConfigTemplate:function(){
+    updateWatcherConfigTemplate:function(req, res, data, db){
         fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), {flag: 'wx'}, function (err, content) {
             if(err){
                 res.writeHead(400)
@@ -348,7 +348,7 @@ module.exports = {
             }
         })
     },
-    getActionConfigTemplate:function(){
+    getActionConfigTemplate:function(req, res, data, db){
         fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
             if(err){
                 res.writeHead(400)
@@ -358,7 +358,7 @@ module.exports = {
             }
         })
     },
-    updateActionConfigTemplate:function(){
+    updateActionConfigTemplate:function(req, res, data, db){
         fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), {flag: 'wx'}, function (err, content) {
             if(err){
                 res.writeHead(400)
