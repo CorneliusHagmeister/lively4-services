@@ -696,7 +696,7 @@ function startTriggerScript(user, triggerId, db) {
                         for (var j = 0; j < actionParameters.length; j++) {
                             if (actionParameters[j] === "") continue;
                             if (typeof actionParameters[j] === "string") {
-                                initParameters = initParameters + "actualParameters.push('" + actionParameters[j] + "');\n"
+                                initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             } else {
                                 initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             }

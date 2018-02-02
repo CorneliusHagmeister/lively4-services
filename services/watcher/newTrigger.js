@@ -1,1 +1,5 @@
-console.log("hello world")
+setInterval(()=>{
+    console.log("watcher...")
+    runActions("Something");
+
+},1000)

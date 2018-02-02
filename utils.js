@@ -6,7 +6,6 @@ var mongodb = require('mongodb');
 
 module.exports = {
     runAction: function (actionsPath, actionId,configContent, process, actionParameters) {
-        configContent = JSON.parse(configContent)
         fs.readFile(actionsPath + actionId, 'utf8', function (err, content) {
             console.log(config.actionConfigsDir + '/' + actionId.replace(".js", ".json"))
                 require('crypto').randomBytes(48, function (err, buffer) {

@@ -1,11 +1,11 @@
 var request = require('request');
 
-var webhook = config(webhook);
+var webhook = config[webhook];
 
 var text = "Hello from a lively action.\n";
 try {
     text += process.argv[2] + "\n";
-    text += config(text);
+    text += config[text];
 } catch (e) {
     console.log(e);
 }
