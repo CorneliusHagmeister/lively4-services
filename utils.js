@@ -9,7 +9,6 @@ module.exports = {
         fs.readFile(actionsPath + actionId, 'utf8', function (err, content) {
             console.log(config.actionConfigsDir + '/' + actionId.replace(".js", ".json"))
                 require('crypto').randomBytes(48, function (err, buffer) {
-                    configContent=JSON.parse(configContent)
                     for (var key in configContent) {
                         if( configContent.hasOwnProperty(key) ) {
 
