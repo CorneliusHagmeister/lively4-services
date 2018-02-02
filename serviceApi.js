@@ -338,7 +338,7 @@ module.exports = {
         })
     },
     updateWatcherConfigTemplate:function(req, res, data, db){
-        fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), {flag: 'wx'}, function (err, content) {
+        fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), data.data, function (err, content) {
             if(err){
                 res.writeHead(400)
                 res.end(err)
@@ -359,7 +359,7 @@ module.exports = {
         })
     },
     updateActionConfigTemplate:function(req, res, data, db){
-        fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), {flag: 'wx'}, function (err, content) {
+        fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), data.data, function (err, content) {
             if(err){
                 res.writeHead(400)
                 res.end(err)
