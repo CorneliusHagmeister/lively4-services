@@ -689,7 +689,7 @@ function startTriggerScript(user, triggerId, db) {
                 var actionString = ""
                 if (result["triggers"][replaceDots(triggerId)]["actions"]) {
                     for (var i = 0; i < result["triggers"][replaceDots(triggerId)]["actions"].length; i++) {
-                        var action = result["triggers"][replaceDots(triggerId)]["actions"][i].name
+                        var action = result["triggers"][replaceDots(triggerId)]["actions"][i]
 
                         var initParameters =
                             "var actualParameters = []; \n"
@@ -701,7 +701,7 @@ function startTriggerScript(user, triggerId, db) {
                                 initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             }
                         }
-                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action + "',"+JSON.stringify(action.config)+",process, actualParameters); \n"
+                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "',"+JSON.stringify(action.config)+",process, actualParameters); \n"
                         actionString = actionString + initParameters + runAction
                         console.log(actionString)
                     }
