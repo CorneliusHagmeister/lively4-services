@@ -1,4 +1,6 @@
 {
   "text": "Replace with text you want to send.",
-  "webhook": "Replace with webhook url for your channel"
+  "webhook": "Replace with webhook url for your channel",
+  "icon": "https://lively-kernel.org/lively4/lively4-core/media/lively4_logo_smooth_200.png",
+  "username": "lively-bot"
 }

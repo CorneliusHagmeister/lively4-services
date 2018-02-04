@@ -10,7 +10,10 @@ try {
     console.log(e);
 }
 
-var payload={"text":text};
+var payload={
+    "text":text,
+    "icon_url": config[icon]
+};
 payload = JSON.stringify(payload);
 
 request.post({url: webhook, body: payload}, function(err, res){
