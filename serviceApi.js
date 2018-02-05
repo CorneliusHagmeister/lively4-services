@@ -60,16 +60,44 @@ module.exports = {
         })
     },
     getWatcherConfig: function (req, res, data, db) {
-        db.collection("users").findOne({
-            user: data.user
-        }, function (err, result) {
-            try {
-                var config = result["triggers"][replaceDots(data.triggerId)]["config"]
-                jsonResponse(res, config)
-            } catch (err) {
-                res.writeHead(400)
-                res.end("Something  went  wrong: " + err)
-            }
+        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+            db.collection("users").findOne({
+                user: data.user
+            }, function (err, result) {
+                try {
+                    var config = result["triggers"][replaceDots(data.triggerId)]["config"]
+                    var newConfig = {}
+                    for (var key in content) {
+                        if (config[key]) {
+                            newConfig[key] = config[key]
+                        } else {
+                            newConfig[key] = ""
+                        }
+                    }
+                    var triggers = result["triggers"]
+                    triggers[replaceDots(data.triggerId)]["config"]=newConfig
+                    db.collection("users").updateOne({
+                        user: data.user
+                    }, {
+                        $set: {
+                            "triggers": triggers
+                        }
+                    }, function (errUpdate, resultUpdate) {
+                      if(errUpdate){
+                          res.writeHead(400)
+                          res.end("Couldnt update config")
+                      }  else{
+                          jsonResponse(res, config)
+                          return
+                      }
+                    })
+                    res.writeHead(400)
+                    res.end("Maybe trigger wasnt found.")
+                } catch (err) {
+                    res.writeHead(400)
+                    res.end("Something  went  wrong: " + err)
+                }
+            })
         })
     },
     updateWatcherConfig: function (req, res, data, db) {
@@ -101,22 +129,50 @@ module.exports = {
         })
     },
     getActionConfig: function (req, res, data, db) {
-        db.collection("users").findOne({
-            user: data.user
-        }, function (err, result) {
-            try {
+        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+            db.collection("users").findOne({
+                user: data.user
+            }, function (err, result) {
+                try {
+                    var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
+                    var triggers = result["triggers"]
+                    for (var i = 0; i < actions.length; i++) {
+                        if (actions[i].name === data.actionId) {
+                            var newConfig = {}
+                            for (var key in content) {
+                                if (actions[i][key]) {
+                                    newConfig[key] = actions[i][key]
+                                } else {
+                                    newConfig[key] = ""
+                                }
+                            }
+                            triggers[replaceDots(data.triggerId)]["actions"][i] = newConfig
+                            db.collection("users").updateOne({
+                                user: data.user
+                            }, {
+                                $set: {
+                                    "triggers": triggers
+                                }
+                            }, function (errUpdate, resultUpdate) {
+                                if (errUpdate) {
+                                    res.writeHead(400)
+                                    res.end("The new config could not be saved.")
+                                } else {
 
-                var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
-                for (var i = 0; i < actions.length; i++) {
-                    if (actions[i].name === data.actionId) {
-                        jsonResponse(res, actions[i]["config"])
-                        return
+                                    jsonResponse(res, actions[i]["config"])
+                                    return
+                                }
+                            })
+
+                        }
                     }
+                    res.write(400)
+                    res.end("Action doesnt exist")
+                } catch (err) {
+                    res.writeHead(400)
+                    res.end("Something  went  wrong: " + err)
                 }
-            } catch (err) {
-                res.writeHead(400)
-                res.end("Something  went  wrong: " + err)
-            }
+            })
         })
     },
     updateActionConfig: function (req, res, data, db) {
@@ -327,43 +383,43 @@ module.exports = {
             })
         })
     },
-    getWatcherConfigTemplate:function(req, res, data, db){
+    getWatcherConfigTemplate: function (req, res, data, db) {
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
-            if(err){
+            if (err) {
                 res.writeHead(400)
                 res.end(err)
-            }else{
+            } else {
                 jsonResponse(res, content);
             }
         })
     },
-    updateWatcherConfigTemplate:function(req, res, data, db){
+    updateWatcherConfigTemplate: function (req, res, data, db) {
         fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), data.data, function (err, content) {
-            if(err){
+            if (err) {
                 res.writeHead(400)
                 res.end(err)
-            }else{
+            } else {
                 res.writeHead(200)
                 res.end("Successful template update");
             }
         })
     },
-    getActionConfigTemplate:function(req, res, data, db){
+    getActionConfigTemplate: function (req, res, data, db) {
         fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
-            if(err){
+            if (err) {
                 res.writeHead(400)
                 res.end(err)
-            }else{
+            } else {
                 jsonResponse(res, content);
             }
         })
     },
-    updateActionConfigTemplate:function(req, res, data, db){
+    updateActionConfigTemplate: function (req, res, data, db) {
         fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), data.data, function (err, content) {
-            if(err){
+            if (err) {
                 res.writeHead(400)
                 res.end(err)
-            }else{
+            } else {
                 res.writeHead(200)
                 res.end("Successful template update");
             }
@@ -562,7 +618,7 @@ module.exports = {
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
-            if (err||!result) {
+            if (err || !result) {
                 res.writeHead(400)
                 res.end("Cant find User")
             } else {
@@ -588,7 +644,7 @@ module.exports = {
                             res.end("Sucessful deletion")
                         }
                     });
-                }catch(err){
+                } catch (err) {
                     res.writeHead(400)
                     res.end(err)
                 }
@@ -599,7 +655,7 @@ module.exports = {
         db.collection("users").findOne({
             user: data.user
         }, function (err, result) {
-            if (err||!result) {
+            if (err || !result) {
                 res.writeHead(400)
                 res.end("Cant find User")
             } else {
@@ -653,10 +709,10 @@ module.exports = {
                         date = new Date(result[i]["date"])
                         resultString += "[" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "] " + result[i]["message"]
                     }
-                    console.log("result: "+result);
+                    console.log("result: " + result);
                     res.writeHead(200)
                     res.end(resultString)
-                }else{
+                } else {
                     res.writeHead(400)
                     res.end("No logs available.")
                 }
@@ -703,15 +759,15 @@ function startTriggerScript(user, triggerId, db) {
             user: user
         }, function (err, result) {
 // <<<<<<< Updated upstream
-            console.log("data before: "+data)
-            data = "var utils = require('./utils'); \n"+data
+            console.log("data before: " + data)
+            data = "var utils = require('./utils'); \n" + data
             // data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
             for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
-                data = data.replace("config[" + entry + "]", "'"+result["triggers"][replaceDots(triggerId)]["config"][entry]+"'")
+                data = data.replace("config[" + entry + "]", "'" + result["triggers"][replaceDots(triggerId)]["config"][entry] + "'")
             }
 // =======
             var credentials = data.match(/credentials\[.*\]/)
-            if(credentials) {
+            if (credentials) {
                 for (var i = 0; i < credentials.length; i++) {
                     data = data.replace(credentials[i], result["credentials"][credentials[0].substring(credentials[0].indexOf("[") + 1, credentials[0].lastIndexOf("]"))])
                 }
@@ -723,9 +779,9 @@ function startTriggerScript(user, triggerId, db) {
             if (actionCall) {
                 actionCall = actionCall[0]
                 var actionParameters = actionCall.substring(actionCall.indexOf("(") + 1, actionCall.lastIndexOf(")")).split(',')
-                for(var i =0;i<actionParameters.length;i++){
-                    if(actionParameters[i]===','){
-                        actionParameters.splice(i,1);
+                for (var i = 0; i < actionParameters.length; i++) {
+                    if (actionParameters[i] === ',') {
+                        actionParameters.splice(i, 1);
                     }
                 }
                 var actionString = ""
@@ -743,7 +799,7 @@ function startTriggerScript(user, triggerId, db) {
                                 initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             }
                         }
-                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "',"+JSON.stringify(action.config)+",process, actualParameters); \n"
+                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "'," + JSON.stringify(action.config) + ",process, actualParameters); \n"
                         actionString = actionString + initParameters + runAction
                         console.log(actionString)
                     }
@@ -751,7 +807,7 @@ function startTriggerScript(user, triggerId, db) {
                 data = data.replace(actionCall, actionString);
                 data = "var spawn = require('child_process').spawn;\n" + data;
             }
-            console.log("data: "+ data);
+            console.log("data: " + data);
             fs.readFile(config.watcherConfigsDir + '/' + triggerId.replace(".js", ".json"), 'utf8', function (err, configContent) {
                 configContent = JSON.parse(configContent)
                 for (var key in configContent) {
