@@ -67,9 +67,7 @@ module.exports = {
                 try {
                     var config = result["triggers"][replaceDots(data.triggerId)]["config"]
                     var newConfig = {}
-                    console.log("content"+content)
                     content=JSON.parse(content)
-                    console.log(content)
                     for (var key in content) {
                         if (config[key]) {
                             newConfig[key] = config[key]
@@ -89,13 +87,13 @@ module.exports = {
                         if (errUpdate) {
                             res.writeHead(400)
                             res.end("Couldnt update config")
+                            return
                         } else {
                             jsonResponse(res, newConfig)
                             return
                         }
                     })
-                    res.writeHead(400)
-                    res.end("Maybe trigger wasnt found.")
+
                 } catch (err) {
                     res.writeHead(400)
                     res.end("Something  went  wrong: " + err)
@@ -139,9 +137,7 @@ module.exports = {
                 try {
                     var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
                     var triggers = result["triggers"]
-                    console.log("content"+content)
                     content=JSON.parse(content)
-                    console.log(content)
                     for (var i = 0; i < actions.length; i++) {
                         if (actions[i].name === data.actionId) {
                             var newConfig = {}
@@ -172,8 +168,6 @@ module.exports = {
 
                         }
                     }
-                    res.write(400)
-                    res.end("Action doesnt exist")
                 } catch (err) {
                     res.writeHead(400)
                     res.end("Something  went  wrong: " + err)
