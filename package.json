@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/LivelyKernel/lively4-services",
   "dependencies": {
+    "@sendgrid/mail": "^6.2.1",
     "babel-polyfill": "^6.8.0",
     "bluebird": "^3.1.1",
     "body-parser": "^1.18.2",

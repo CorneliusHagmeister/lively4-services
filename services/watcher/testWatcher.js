@@ -1,1 +1,1 @@
-console.log("test watcher");
+runActions("Test message passed from watcher");

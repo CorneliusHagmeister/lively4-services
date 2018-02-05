@@ -1,9 +1,10 @@
-var Dropbox = require('dropbox');
-var dbx = new Dropbox({ accessToken: dropboxKey });
+const PATH = config[path];
+const ENDING = config[type];
+var dbx = new Dropbox({ accessToken: credentials[dropbox] });
 
-const PATH = config(path);
-const ENDING = '.pdf';
+
 const POLLING_INTERVAL = parseFloat(process.argv[2]) || 1; // minute
+var Dropbox = require('dropbox');
 
 function poll() {
     console.log("polling right now")
@@ -12,7 +13,7 @@ function poll() {
             var somethingNew = false;
             var curr = Date.now();
             for (entry of response.entries) {
-                if (entry.name.endsWith(ENDING) ) { // also check if timestamp works
+                if (entry.name.endsWith(ENDING) ) {
                     var modified = new Date(entry.client_modified);
                     var old = (curr - modified) / 1000 / 60; // in minutes
                     if (old < POLLING_INTERVAL) {
