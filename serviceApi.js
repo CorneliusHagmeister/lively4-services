@@ -67,6 +67,7 @@ module.exports = {
                 try {
                     var config = result["triggers"][replaceDots(data.triggerId)]["config"]
                     var newConfig = {}
+                    content=JSON.parse(content)
                     for (var key in content) {
                         if (config[key]) {
                             newConfig[key] = config[key]
@@ -136,6 +137,7 @@ module.exports = {
                 try {
                     var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
                     var triggers = result["triggers"]
+                    content=JSON.parse(content)
                     for (var i = 0; i < actions.length; i++) {
                         if (actions[i].name === data.actionId) {
                             var newConfig = {}
