@@ -148,7 +148,7 @@ module.exports = {
                                     newConfig[key] = ""
                                 }
                             }
-                            triggers[replaceDots(data.triggerId)]["actions"][i] = newConfig
+                            triggers[replaceDots(data.triggerId)]["actions"][i]["config"] = newConfig
                             db.collection("users").updateOne({
                                 user: data.user
                             }, {
