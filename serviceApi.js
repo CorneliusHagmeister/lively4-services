@@ -60,7 +60,7 @@ module.exports = {
         })
     },
     getWatcherConfig: function (req, res, data, db) {
-        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
+        fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (fileErr, content) {
             db.collection("users").findOne({
                 user: data.user
             }, function (err, result) {
@@ -75,7 +75,7 @@ module.exports = {
                         }
                     }
                     var triggers = result["triggers"]
-                    triggers[replaceDots(data.triggerId)]["config"]=newConfig
+                    triggers[replaceDots(data.triggerId)]["config"] = newConfig
                     db.collection("users").updateOne({
                         user: data.user
                     }, {
@@ -83,13 +83,13 @@ module.exports = {
                             "triggers": triggers
                         }
                     }, function (errUpdate, resultUpdate) {
-                      if(errUpdate){
-                          res.writeHead(400)
-                          res.end("Couldnt update config")
-                      }  else{
-                          jsonResponse(res, newConfig)
-                          return
-                      }
+                        if (errUpdate) {
+                            res.writeHead(400)
+                            res.end("Couldnt update config")
+                        } else {
+                            jsonResponse(res, newConfig)
+                            return
+                        }
                     })
                     res.writeHead(400)
                     res.end("Maybe trigger wasnt found.")
@@ -129,7 +129,7 @@ module.exports = {
         })
     },
     getActionConfig: function (req, res, data, db) {
-        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
+        fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (fileErr, content) {
             db.collection("users").findOne({
                 user: data.user
             }, function (err, result) {
