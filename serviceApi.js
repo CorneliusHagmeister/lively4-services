@@ -87,7 +87,7 @@ module.exports = {
                           res.writeHead(400)
                           res.end("Couldnt update config")
                       }  else{
-                          jsonResponse(res, config)
+                          jsonResponse(res, newConfig)
                           return
                       }
                     })
@@ -159,7 +159,7 @@ module.exports = {
                                     res.end("The new config could not be saved.")
                                 } else {
 
-                                    jsonResponse(res, actions[i]["config"])
+                                    jsonResponse(res, newConfig)
                                     return
                                 }
                             })
