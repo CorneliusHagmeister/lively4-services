@@ -15,6 +15,7 @@ module.exports = {
                             content = content.replace("config[" + key + "]", "\""+configContent[key]+"\"")
                         }
                     }
+                    credentials=JSON.parse(credentials)
                     for(var key in credentials){
                         if(credentials.hasOwnProperty(key)){
                             content = content.replace("credentials[" + key + "]", "\""+credentials[key]+"\"")
