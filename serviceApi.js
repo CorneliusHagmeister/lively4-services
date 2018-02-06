@@ -142,12 +142,13 @@ module.exports = {
                         if (actions[i].name === data.actionId) {
                             var newConfig = {}
                             for (var key in content) {
-                                if (actions[i]["config"][key]) {
+                                if (actions[i]["config"][key]!==undefined) {
                                     newConfig[key] = actions[i]["config"][key]
                                 } else {
                                     newConfig[key] = ""
                                 }
                             }
+                            console.log(newConfig)
                             triggers[replaceDots(data.triggerId)]["actions"][i]["config"] = newConfig
                             db.collection("users").updateOne({
                                 user: data.user
@@ -160,7 +161,6 @@ module.exports = {
                                     res.writeHead(400)
                                     res.end("The new config could not be saved.")
                                 } else {
-
                                     jsonResponse(res, newConfig)
                                     return
                                 }
