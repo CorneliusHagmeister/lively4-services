@@ -800,7 +800,7 @@ function startTriggerScript(user, triggerId, db) {
                                 initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             }
                         }
-                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "'," + JSON.stringify(action.config) +JSON.stringify(result["credentials"])+ ",process, actualParameters); \n"
+                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "'," + JSON.stringify(action.config) +","+JSON.stringify(result["credentials"])+ ",process, actualParameters); \n"
                         actionString = actionString + initParameters + runAction
                         console.log(actionString)
                     }
