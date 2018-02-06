@@ -1,4 +1,5 @@
 {
+  "description": "This script watches a specified dropbox folder for a new file of a specified type",
   "path":"/PhD/papers",
   "type":"pdf"
 }
