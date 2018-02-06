@@ -137,6 +137,7 @@ module.exports = {
                 try {
                     var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
                     var triggers = result["triggers"]
+                    console.log(content)
                     content=JSON.parse(content)
                     for (var i = 0; i < actions.length; i++) {
                         if (actions[i].name === data.actionId) {
