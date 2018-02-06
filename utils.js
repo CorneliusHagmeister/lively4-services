@@ -5,7 +5,7 @@ const fs = require('fs');
 var mongodb = require('mongodb');
 
 module.exports = {
-    runAction: function (actionsPath, actionId,configContent, process, actionParameters) {
+    runAction: function (actionsPath, actionId,configContent,credentials, process, actionParameters) {
         fs.readFile(actionsPath + actionId, 'utf8', function (err, content) {
             console.log(config.actionConfigsDir + '/' + actionId.replace(".js", ".json"))
                 require('crypto').randomBytes(48, function (err, buffer) {
@@ -13,6 +13,11 @@ module.exports = {
                         if( configContent.hasOwnProperty(key) ) {
 
                             content = content.replace("config[" + key + "]", "\""+configContent[key]+"\"")
+                        }
+                    }
+                    for(var key in credentials){
+                        if(credentials.hasOwnProperty(key)){
+                            content = content.replace("credentials[" + key + "]", "\""+credentials[key]+"\"")
                         }
                     }
                     var token = buffer.toString('hex');
