@@ -11,11 +11,9 @@ module.exports = {
                 require('crypto').randomBytes(48, function (err, buffer) {
                     for (var key in configContent) {
                         if( configContent.hasOwnProperty(key) ) {
-
                             content = content.replace("config[" + key + "]", "\""+configContent[key]+"\"")
                         }
                     }
-                    credentials=JSON.parse(credentials)
                     for(var key in credentials){
                         if(credentials.hasOwnProperty(key)){
                             content = content.replace("credentials[" + key + "]", "\""+credentials[key]+"\"")
