@@ -1,4 +1,5 @@
 {
+  "description": "Sends a message to a slack channel specified with the webhook. Message contains result from watcher + text specified in config",    
   "text": "Replace with text you want to send.",
   "webhook": "Replace with webhook url for your channel",
   "icon": "https://lively-kernel.org/lively4/lively4-core/media/lively4_logo_smooth_200.png",
