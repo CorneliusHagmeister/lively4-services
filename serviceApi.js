@@ -142,8 +142,8 @@ module.exports = {
                         if (actions[i].name === data.actionId) {
                             var newConfig = {}
                             for (var key in content) {
-                                if (actions[i][key]) {
-                                    newConfig[key] = actions[i][key]
+                                if (actions[i]["config"][key]) {
+                                    newConfig[key] = actions[i]["config"][key]
                                 } else {
                                     newConfig[key] = ""
                                 }
