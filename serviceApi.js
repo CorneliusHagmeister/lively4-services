@@ -8,6 +8,13 @@ var mongodb = require('mongodb');
 const fs = require('fs');
 
 module.exports = {
+    /**
+     * Sets credentials for a specific user. If they do not exist the credentials are created.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, type, key as attributes of data
+     * @param db MongoDb connection
+     */
     setCredentials: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -36,6 +43,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns all credentials for a specific user.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user attribute of data
+     * @param db MongoDb connection
+     */
     getCredentials: function (req, res, data, db) {
         console.log("Inside getCredentials for ", data.user);
         if (!data.user) {
@@ -59,6 +73,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns the user specific watcher-configuration for a given triggerId. The configuration is compared with the configuration template, so that missing keys are created and unnecessary keys removed.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user,triggerId attribute of data
+     * @param db MongoDb connection
+     */
     getWatcherConfig: function (req, res, data, db) {
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (fileErr, content) {
             db.collection("users").findOne({
@@ -67,7 +88,7 @@ module.exports = {
                 try {
                     var config = result["triggers"][replaceDots(data.triggerId)]["config"]
                     var newConfig = {}
-                    content=JSON.parse(content)
+                    content = JSON.parse(content)
                     for (var key in content) {
                         if (config[key]) {
                             newConfig[key] = config[key]
@@ -101,6 +122,13 @@ module.exports = {
             })
         })
     },
+    /**
+     * Replaces a watcher-configuration with the given replacement.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId, config attribute of data
+     * @param db MongoDb connection
+     */
     updateWatcherConfig: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -129,6 +157,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns the user specific action-configuration for a given triggerId. The configuration is compared with the configuration template, so that missing keys are created and unnecessary keys removed.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId, actionId attribute of data
+     * @param db MongoDb connection
+     */
     getActionConfig: function (req, res, data, db) {
         fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (fileErr, content) {
             db.collection("users").findOne({
@@ -138,12 +173,12 @@ module.exports = {
                     var actions = result["triggers"][replaceDots(data.triggerId)]["actions"]
                     var triggers = result["triggers"]
                     console.log(content)
-                    content=JSON.parse(content)
+                    content = JSON.parse(content)
                     for (var i = 0; i < actions.length; i++) {
                         if (actions[i].name === data.actionId) {
                             var newConfig = {}
                             for (var key in content) {
-                                if (actions[i]["config"][key]!==undefined) {
+                                if (actions[i]["config"][key] !== undefined) {
                                     newConfig[key] = actions[i]["config"][key]
                                 } else {
                                     newConfig[key] = ""
@@ -166,7 +201,6 @@ module.exports = {
                                     return
                                 }
                             })
-
                         }
                     }
                 } catch (err) {
@@ -176,6 +210,13 @@ module.exports = {
             })
         })
     },
+    /**
+     * Replaces a action-configuration with the given replacement.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId, actionId, config attribute of data
+     * @param db MongoDb connection
+     */
     updateActionConfig: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -208,6 +249,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Creates a new User
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user attribute of data
+     * @param db MongoDb connection
+     */
     addUser: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -237,6 +285,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Removes a User
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user attribute of data
+     * @param db MongoDb connection
+     */
     removeUser: function (req, res, data, db) {
         db.collection("users").deleteOne({
             user: data.user
@@ -250,6 +305,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns all triggers associated with a user and also creates a new user if he does'nt exist.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user attribute of data
+     * @param db MongoDb connection
+     */
     getUserTriggers: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -302,6 +364,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns the description of a watcher.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     getWatcherDescription: function (req, res, data, db) {
         try {
             fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
@@ -330,6 +399,13 @@ module.exports = {
             res.end("Prob file not found :" + err)
         }
     },
+    /**
+     * Updates the description of a watcher.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId, description attribute of data
+     * @param db MongoDb connection
+     */
     updateWatcherDescription: function (req, res, data, db) {
         try {
             fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
@@ -362,6 +438,13 @@ module.exports = {
             res.end("Prob file not found :" + err)
         }
     },
+    /**
+     * Creates a new Triggertemplate.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires name attribute of data
+     * @param db MongoDb connection
+     */
     createTrigger: function (req, res, data, db) {
         fs.writeFile(config.watcherDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
             if (writeErr) {
@@ -384,6 +467,13 @@ module.exports = {
             })
         })
     },
+    /**
+     * Returns the config-template of a watcher.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires triggerId attribute of data
+     * @param db MongoDb connection
+     */
     getWatcherConfigTemplate: function (req, res, data, db) {
         fs.readFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), "utf8", function (err, content) {
             if (err) {
@@ -394,6 +484,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Updates the config-template of a watcher.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires triggerId attribute of data
+     * @param db MongoDb connection
+     */
     updateWatcherConfigTemplate: function (req, res, data, db) {
         fs.writeFile(config.watcherConfigsDir + "/" + (data.triggerId).replace(".js", ".json"), data.data, function (err, content) {
             if (err) {
@@ -405,6 +502,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns the config-template of an action.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires actionId attribute of data
+     * @param db MongoDb connection
+     */
     getActionConfigTemplate: function (req, res, data, db) {
         fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
             if (err) {
@@ -415,6 +519,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Updates the config-template of a action.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires actionId attribute of data
+     * @param db MongoDb connection
+     */
     updateActionConfigTemplate: function (req, res, data, db) {
         fs.writeFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), data.data, function (err, content) {
             if (err) {
@@ -426,6 +537,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Assigns a trigger to a user.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     assignTrigger: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -459,8 +577,14 @@ module.exports = {
                 })
             }
         })
-    }
-    ,
+    },
+    /**
+     * Dissociates a trigger of a user.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     removeTrigger: function (req, res, data, db) {
         stopTriggerScript(data.user, data.triggerId, db)
         db.collection("users").findOne({
@@ -490,6 +614,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns the description of an action.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires actionId attribute of data
+     * @param db MongoDb connection
+     */
     getActionDescription: function (req, res, data, db) {
         try {
             fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
@@ -518,6 +649,13 @@ module.exports = {
             res.end("Prob file not found :" + err)
         }
     },
+    /**
+     * Updates the description of an action.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires actionId, description attribute of data
+     * @param db MongoDb connection
+     */
     updateActionDescription: function (req, res, data, db) {
         try {
             fs.readFile(config.actionConfigsDir + "/" + (data.actionId).replace(".js", ".json"), "utf8", function (err, content) {
@@ -551,6 +689,13 @@ module.exports = {
             res.end("Prob file not found :" + err)
         }
     },
+    /**
+     * Creates an empty action including a new config template.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires name attribute of data
+     * @param db MongoDb connection
+     */
     createAction: function (req, res, data, db) {
         fs.writeFile(config.actionsDir + "/" + data.name + ".js", "", {flag: 'wx'}, function (writeErr) {
             if (writeErr) {
@@ -574,6 +719,13 @@ module.exports = {
         })
 
     },
+    /**
+     * Assigns an action to a user.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, actionId, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     assignAction: function (req, res, data, db) {
         try {
             db.collection("users").findOne({
@@ -615,6 +767,13 @@ module.exports = {
             res.end(err)
         }
     },
+    /**
+     * Dissociates an action from a user.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, actionId, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     removeAction: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -652,6 +811,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Executes the Trigger script, replacing the keywords and the actioncalls.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     runUserTrigger: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -682,6 +848,13 @@ module.exports = {
             }
         })
     },
+    /**
+     * Stops a running trigger.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires user, triggerId attribute of data
+     * @param db MongoDb connection
+     */
     stopUserTrigger: function (req, res, data, db) {
         db.collection("users").findOne({
             user: data.user
@@ -698,6 +871,14 @@ module.exports = {
             }
         })
     },
+    /**
+     * Returns the logs for a running trigger.
+     * @param req Request object
+     * @param res Response object
+     * @param data Parsed parameters of the request. Requires triggerId attribute of data
+     * @param db MongoDb connection
+     */
+    // TODO: make the log returns user specific. Otherwise there cant be multiple users using the same trigger concurrently.
     getTriggerLogs: function (req, res, data, db) {
         var trigger = replaceDots(data.triggerId)
         db.collection("logs").find({
@@ -707,7 +888,7 @@ module.exports = {
                 if (result) {
                     var resultString = ""
                     for (var i = 0; i < result.length; i++) {
-                        date = new Date(result[i]["date"])
+                        var date = new Date(result[i]["date"])
                         resultString += "[" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "] " + result[i]["message"]
                     }
                     console.log("result: " + result);
@@ -727,6 +908,13 @@ module.exports = {
     }
 }
 
+/**
+ * Saves a log message to the db.
+ * @param triggerId The triggerId to which the message belongs
+ * @param user The user which created this message
+ * @param log The actual message to be saved
+ * @param db MongoDb connection
+ */
 function create_log(triggerId, user, log, db) {
     var new_doc = {
         trigger: replaceDots(triggerId),
@@ -741,7 +929,12 @@ function create_log(triggerId, user, log, db) {
         }
     )
 }
-
+/**
+ * Removes all logs for trigger and user.
+ * @param triggerId The triggerId to which the message belongs
+ * @param user The user which created this message
+ * @param db MongoDb connection
+ */
 function remove_logs(triggerId, user, db) {
     db.collection("logs").remove({
         trigger: replaceDots(triggerId),
@@ -752,6 +945,12 @@ function remove_logs(triggerId, user, db) {
     });
 }
 
+/**
+ * Replaces all keywords and the runactions call with the actual values. The script is then spawned as a new process, which automatically creates logs in the db from the std-output
+ * @param user The user which created this message
+ * @param triggerId The triggerId to which the message belongs
+ * @param db MongoDb connection
+ */
 function startTriggerScript(user, triggerId, db) {
     fs.readFile(config.watcherDir + "/" + triggerId, "utf8", function (err, data) {
         if (err)
@@ -759,22 +958,20 @@ function startTriggerScript(user, triggerId, db) {
         db.collection("users").findOne({
             user: user
         }, function (err, result) {
-// <<<<<<< Updated upstream
             console.log("data before: " + data)
             data = "var utils = require('./utils'); \n" + data
             // data = data.replace("dropboxKey", "'" + result["credentials"]["dropbox"] + "'")
             for (var entry in result["triggers"][replaceDots(triggerId)]["config"]) {
                 data = data.replace("config[" + entry + "]", "'" + result["triggers"][replaceDots(triggerId)]["config"][entry] + "'")
             }
-// =======
+
             var credentials = data.match(/credentials\[.*\]/)
             if (credentials) {
                 for (var i = 0; i < credentials.length; i++) {
-                    data = data.replace(credentials[i], "\""+result["credentials"][credentials[0].substring(credentials[0].indexOf("[") + 1, credentials[0].lastIndexOf("]"))]+"\"")
+                    data = data.replace(credentials[i], "\"" + result["credentials"][credentials[0].substring(credentials[0].indexOf("[") + 1, credentials[0].lastIndexOf("]"))] + "\"")
                 }
             }
-            // data = data.replace("credentials[dropbox]", "'" + result["credentials"]["dropbox"] + "'")
-// >>>>>>> Stashed changes
+
             var actionString = "";
             var actionCall = data.match(/runActions\((.*)\)(\s*)(\;|\n)/);
             if (actionCall) {
@@ -800,7 +997,7 @@ function startTriggerScript(user, triggerId, db) {
                                 initParameters = initParameters + "actualParameters.push(" + actionParameters[j] + ");\n"
                             }
                         }
-                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "'," + JSON.stringify(action.config) +","+JSON.stringify(result["credentials"])+ ",process, actualParameters); \n"
+                        var runAction = "utils.runAction('" + config.actionsDir + "/" + '\',\'' + action.name + "'," + JSON.stringify(action.config) + "," + JSON.stringify(result["credentials"]) + ",process, actualParameters); \n"
                         actionString = actionString + initParameters + runAction
                         console.log(actionString)
                     }
@@ -852,13 +1049,16 @@ function startTriggerScript(user, triggerId, db) {
         })
     });
 }
-
+/**
+ * Kills the process of triggerScript using the saved Pid from the db.
+ * @param user The user which created this message
+ * @param triggerId The triggerId to which the message belongs
+ * @param db MongoDb connection
+ */
 function stopTriggerScript(user, triggerId, db) {
     db.collection("users").findOne({
         user: user
     }, function (err, result) {
-        //for linux prob =>
-        // exec("kill -9 " + dataVault[user]["trigger"][triggerId]["pid"])
         if (result) {
             if (result["triggers"][replaceDots(triggerId)] && result["triggers"][replaceDots(triggerId)]["pid"]) {
                 // windows
@@ -889,14 +1089,28 @@ function stopTriggerScript(user, triggerId, db) {
     })
 }
 
+/**
+ * Since json does'nt support dots in a key, this key is replaced with a sequence of characters.
+ * @param toBeReplaced The string of which the dots are to be replaced.
+ * @returns {string} The resulting string without dots.
+ */
 function replaceDots(toBeReplaced) {
     return toBeReplaced.replace(/\./g, '1234')
 }
-
+/**
+ * Since json does'nt support dots in a key, this key is replaced with a sequence of characters. This one works the other way around.
+ * @param toBeReplaced The string of which the sequence is to be replaced.
+ * @returns {string} The resulting string with dots.
+ */
 function replaceUnderscore(toBeReplaced) {
     return toBeReplaced.replace(/1234/g, '.')
 }
 
+/**
+ * Sends a JSON response with the appropriate headers .
+ * @param res The response object
+ * @param obj The JSON which is to be sent.
+ */
 function jsonResponse(res, obj) {
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(obj));

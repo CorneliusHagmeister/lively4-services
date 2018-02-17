@@ -5,6 +5,15 @@ const fs = require('fs');
 var mongodb = require('mongodb');
 
 module.exports = {
+    /**
+     * Executes an action after it replaces all keywords.
+     * @param actionsPath The path the the action script
+     * @param actionId Name of the action script
+     * @param configContent Config of the specific user for the action
+     * @param credentials Credentials of the user
+     * @param process The parent process which is used to pipe the stdin
+     * @param actionParameters Parameters for the action
+     */
     runAction: function (actionsPath, actionId,configContent,credentials, process, actionParameters) {
         fs.readFile(actionsPath + actionId, 'utf8', function (err, content) {
             console.log(config.actionConfigsDir + '/' + actionId.replace(".js", ".json"))

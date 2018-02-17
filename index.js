@@ -72,12 +72,13 @@ function dispatch(req, res) {
                     notFound(res);
                 }
             } else if (req.method === "POST") {
+                // parse the parameters
                 var body = [];
                 req.on('data', function (chunk) {
                     body.push(chunk);
                 }).on('end', function () {
                     body = Buffer.concat(body).toString();
-                    try {
+                    try{
                         var data = JSON.parse(body);
                         req.body = data
                         switch (req.url) {
